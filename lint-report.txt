@@ -1,0 +1,120 @@
+
+/app/applet/server.ts
+  192:11  warning  'groupName' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/app/applet/src/App.tsx
+    11:45  warning  'ListFilter' is defined but never used. Allowed unused vars must match /^_/u                                                                                                          @typescript-eslint/no-unused-vars
+    12:59  warning  'Key' is defined but never used. Allowed unused vars must match /^_/u                                                                                                                 @typescript-eslint/no-unused-vars
+    15:44  warning  'Building' is defined but never used. Allowed unused vars must match /^_/u                                                                                                            @typescript-eslint/no-unused-vars
+    15:54  warning  'Inbox' is defined but never used. Allowed unused vars must match /^_/u                                                                                                               @typescript-eslint/no-unused-vars
+    15:67  warning  'Circle' is defined but never used. Allowed unused vars must match /^_/u                                                                                                              @typescript-eslint/no-unused-vars
+    24:8   warning  'GoogleSheetsExport' is defined but never used. Allowed unused vars must match /^_/u                                                                                                  @typescript-eslint/no-unused-vars
+    31:3   warning  'getProfileById' is defined but never used. Allowed unused vars must match /^_/u                                                                                                      @typescript-eslint/no-unused-vars
+   148:7   warning  'adjustColorBrightness' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                                      @typescript-eslint/no-unused-vars
+   533:10  warning  'googleUser' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                                                 @typescript-eslint/no-unused-vars
+   535:10  warning  'needsGoogleAuth' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                                            @typescript-eslint/no-unused-vars
+   539:10  warning  'isResetConfirmOpen' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                                         @typescript-eslint/no-unused-vars
+   549:10  warning  'expandedCommentsTaskId' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                                     @typescript-eslint/no-unused-vars
+   549:34  warning  'setExpandedCommentsTaskId' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                                  @typescript-eslint/no-unused-vars
+   564:10  warning  'regAppMode' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                                                 @typescript-eslint/no-unused-vars
+   565:10  warning  'editAppMode' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                                                @typescript-eslint/no-unused-vars
+   588:9   warning  'avatarOptions' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                                              @typescript-eslint/no-unused-vars
+   603:10  warning  'selectedPriority' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                                           @typescript-eslint/no-unused-vars
+   603:28  warning  'setSelectedPriority' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                                        @typescript-eslint/no-unused-vars
+   815:14  warning  'err' is defined but never used                                                                                                                                                       @typescript-eslint/no-unused-vars
+   874:14  warning  'e' is defined but never used                                                                                                                                                         @typescript-eslint/no-unused-vars
+  1052:6   warning  React Hook useMemo has unnecessary dependencies: 'customBgColor', 'customCardColor', 'customSidebarColor', and 'customTextColor'. Either exclude them or remove the dependency array  react-hooks/exhaustive-deps
+  1093:9   warning  'isAdminUser' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                                                @typescript-eslint/no-unused-vars
+  1391:6   warning  React Hook useEffect has a missing dependency: 'getApiUrl'. Either include it or remove the dependency array                                                                          react-hooks/exhaustive-deps
+  1411:6   warning  React Hook useEffect has a missing dependency: 'syncPushSubscription'. Either include it or remove the dependency array                                                               react-hooks/exhaustive-deps
+  1614:37  warning  'silent' is assigned a value but never used. Allowed unused args must match /^_/u                                                                                                     @typescript-eslint/no-unused-vars
+  1614:53  warning  'customUserId' is defined but never used. Allowed unused args must match /^_/u                                                                                                        @typescript-eslint/no-unused-vars
+  1734:18  warning  'err' is defined but never used                                                                                                                                                       @typescript-eslint/no-unused-vars
+  1829:20  warning  'e' is defined but never used                                                                                                                                                         @typescript-eslint/no-unused-vars
+  1947:15  warning  'username' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                                                   @typescript-eslint/no-unused-vars
+  2123:14  warning  'err' is defined but never used                                                                                                                                                       @typescript-eslint/no-unused-vars
+  2159:14  warning  'err' is defined but never used                                                                                                                                                       @typescript-eslint/no-unused-vars
+  2165:9   warning  'handleSwitchIdentity' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                                       @typescript-eslint/no-unused-vars
+  2194:9   warning  'handleResetServerDatabase' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                                  @typescript-eslint/no-unused-vars
+  2295:14  warning  'err' is defined but never used                                                                                                                                                       @typescript-eslint/no-unused-vars
+  2607:37  warning  'forceAll' is defined but never used. Allowed unused args must match /^_/u                                                                                                            @typescript-eslint/no-unused-vars
+  3039:9   warning  'groupCompsStatistics' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                                       @typescript-eslint/no-unused-vars
+  4625:36  warning  'e' is defined but never used                                                                                                                                                         @typescript-eslint/no-unused-vars
+  5364:31  warning  'ratioPercent' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                                               @typescript-eslint/no-unused-vars
+  5779:41  warning  'ratioPercent' is assigned a value but never used. Allowed unused vars must match /^_/u                                                                                               @typescript-eslint/no-unused-vars
+  6962:75  warning  'e' is defined but never used                                                                                                                                                         @typescript-eslint/no-unused-vars
+
+/app/applet/src/components/AdminDashboard.tsx
+    4:26  warning  'Trash2' is defined but never used. Allowed unused vars must match /^_/u                                                   @typescript-eslint/no-unused-vars
+    4:51  warning  'Star' is defined but never used. Allowed unused vars must match /^_/u                                                     @typescript-eslint/no-unused-vars
+    5:15  warning  'ArrowUpDown' is defined but never used. Allowed unused vars must match /^_/u                                              @typescript-eslint/no-unused-vars
+    5:28  warning  'ChevronRight' is defined but never used. Allowed unused vars must match /^_/u                                             @typescript-eslint/no-unused-vars
+    5:42  warning  'UserCheck' is defined but never used. Allowed unused vars must match /^_/u                                                @typescript-eslint/no-unused-vars
+    5:53  warning  'ShieldCheck' is defined but never used. Allowed unused vars must match /^_/u                                              @typescript-eslint/no-unused-vars
+    5:66  warning  'Zap' is defined but never used. Allowed unused vars must match /^_/u                                                      @typescript-eslint/no-unused-vars
+    6:25  warning  'RefreshCw' is defined but never used. Allowed unused vars must match /^_/u                                                @typescript-eslint/no-unused-vars
+    6:47  warning  'Plus' is defined but never used. Allowed unused vars must match /^_/u                                                     @typescript-eslint/no-unused-vars
+    6:53  warning  'Minus' is defined but never used. Allowed unused vars must match /^_/u                                                    @typescript-eslint/no-unused-vars
+    7:13  warning  'Flame' is defined but never used. Allowed unused vars must match /^_/u                                                    @typescript-eslint/no-unused-vars
+   13:20  warning  'LineChart' is defined but never used. Allowed unused vars must match /^_/u                                                @typescript-eslint/no-unused-vars
+   13:31  warning  'Line' is defined but never used. Allowed unused vars must match /^_/u                                                     @typescript-eslint/no-unused-vars
+   64:12  warning  'e' is defined but never used                                                                                              @typescript-eslint/no-unused-vars
+   72:3   warning  'announcements' is defined but never used. Allowed unused args must match /^_/u                                            @typescript-eslint/no-unused-vars
+   79:3   warning  'userEmail' is defined but never used. Allowed unused args must match /^_/u                                                @typescript-eslint/no-unused-vars
+  189:6   warning  React Hook useMemo has an unnecessary dependency: 'analyzedCompletions'. Either exclude it or remove the dependency array  react-hooks/exhaustive-deps
+  209:46  warning  't' is defined but never used. Allowed unused args must match /^_/u                                                        @typescript-eslint/no-unused-vars
+  299:9   warning  'attendanceStatusData' is assigned a value but never used. Allowed unused vars must match /^_/u                            @typescript-eslint/no-unused-vars
+  387:16  warning  'e' is defined but never used                                                                                              @typescript-eslint/no-unused-vars
+
+/app/applet/src/components/GoogleSheetsExport.tsx
+    9:3  warning  'Check' is defined but never used. Allowed unused vars must match /^_/u                                             @typescript-eslint/no-unused-vars
+   76:6  warning  React Hook useMemo has a missing dependency: 'isWithinTimeFrame'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  127:6  warning  React Hook useMemo has a missing dependency: 'isWithinTimeFrame'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/app/applet/src/components/PomodoroTimer.tsx
+   82:14  warning  'e' is defined but never used                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+  127:6   warning  React Hook useEffect has missing dependencies: 'onTimerComplete' and 'playChime'. Either include them or remove the dependency array. If 'onTimerComplete' changes too often, find the parent component that defines it and wrap that definition in useCallback  react-hooks/exhaustive-deps
+  252:6   warning  React Hook useEffect has a missing dependency: 'handleMove'. Either include it or remove the dependency array                                                                                                                                                    react-hooks/exhaustive-deps
+
+/app/applet/src/components/StarterTutorial.tsx
+  16:60  warning  'activeTab' is defined but never used. Allowed unused args must match /^_/u      @typescript-eslint/no-unused-vars
+  16:85  warning  'activeGroupId' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/app/applet/src/components/StreaksAchievements.tsx
+   11:42  warning  'Plus' is defined but never used. Allowed unused vars must match /^_/u                             @typescript-eslint/no-unused-vars
+   11:48  warning  'Trash2' is defined but never used. Allowed unused vars must match /^_/u                           @typescript-eslint/no-unused-vars
+   12:15  warning  'BookOpen' is defined but never used. Allowed unused vars must match /^_/u                         @typescript-eslint/no-unused-vars
+   12:25  warning  'UserCheck' is defined but never used. Allowed unused vars must match /^_/u                        @typescript-eslint/no-unused-vars
+   12:59  warning  'Copy' is defined but never used. Allowed unused vars must match /^_/u                             @typescript-eslint/no-unused-vars
+   13:57  warning  'ShieldCheck' is defined but never used. Allowed unused vars must match /^_/u                      @typescript-eslint/no-unused-vars
+   18:3   warning  'getAttendanceByClassmate' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+  158:3   warning  'apiUrlHelper' is defined but never used. Allowed unused args must match /^_/u                     @typescript-eslint/no-unused-vars
+  165:22  warning  'setNewSubject' is assigned a value but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+  166:21  warning  'setNewStatus' is assigned a value but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+  167:19  warning  'setNewDate' is assigned a value but never used. Allowed unused vars must match /^_/u              @typescript-eslint/no-unused-vars
+  171:10  warning  'attError' is assigned a value but never used. Allowed unused vars must match /^_/u                @typescript-eslint/no-unused-vars
+  172:10  warning  'attSuccess' is assigned a value but never used. Allowed unused vars must match /^_/u              @typescript-eslint/no-unused-vars
+  173:10  warning  'isLoadingAtt' is assigned a value but never used. Allowed unused vars must match /^_/u            @typescript-eslint/no-unused-vars
+  213:9   warning  'handleLogAttendance' is assigned a value but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+  240:9   warning  'handleDeleteAttendance' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  411:9   warning  'sortedDeadlines' is assigned a value but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+
+/app/applet/src/components/WeeklyProductivity.tsx
+   3:58  warning  'Legend' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+   4:3   warning  'AreaChart' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+   4:20  warning  'BarChart' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+   7:29  warning  'Clock' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+   7:36  warning  'Calendar' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+   8:21  warning  'Star' is defined but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+   8:35  warning  'Check' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+   8:42  warning  'ChevronDown' is defined but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
+   8:55  warning  'ListFilter' is defined but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+   9:3   warning  'ArrowUpRight' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   9:39  warning  'ThumbsUp' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+  11:10  warning  'motion' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+
+/app/applet/src/lib/firebaseAuth.ts
+  17:5  warning  'isSigningIn' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+✖ 99 problems (0 errors, 99 warnings)
+

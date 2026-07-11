@@ -1,0 +1,242 @@
+{
+  "entities": {
+    "Profile": {
+      "title": "Profile",
+      "description": "Student profile configuration",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "avatar": { "type": "string" },
+        "tagline": { "type": "string" },
+        "passwordHash": { "type": "string" },
+        "salt": { "type": "string" },
+        "securityQuestion": { "type": "string" },
+        "securityAnswer": { "type": "string" },
+        "autoDeleteCompleted": { "type": "boolean" },
+        "autoDeleteInterval": { "type": "string" },
+        "appMode": { "type": "string" },
+        "dailyLoginStreak": { "type": "number" },
+        "lastLoginDate": { "type": "string" },
+        "studyStreak": { "type": "number" },
+        "lastStudyDate": { "type": "string" },
+        "assignmentStreak": { "type": "number" },
+        "lastSubmitDate": { "type": "string" },
+        "badges": { "type": "string" }
+      },
+      "required": ["id", "name", "avatar", "tagline"]
+    },
+    "Group": {
+      "title": "Group",
+      "description": "Study sections or classroom spaces",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "creatorId": { "type": "string" }
+      },
+      "required": ["id", "name", "description", "creatorId"]
+    },
+    "GroupMembership": {
+      "title": "GroupMembership",
+      "description": "Enrolled student connections to study groups",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "groupId": { "type": "string" },
+        "userId": { "type": "string" },
+        "role": { "type": "string" },
+        "canSyncTasks": { "type": "boolean" },
+        "canAnnounce": { "type": "boolean" }
+      },
+      "required": ["id", "groupId", "userId", "role", "canSyncTasks", "canAnnounce"]
+    },
+    "Announcement": {
+      "title": "Announcement",
+      "description": "Classwide study session board feed announcements",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "groupId": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userAvatar": { "type": "string" },
+        "content": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "imageAttachment": { "type": "string" }
+      },
+      "required": ["id", "groupId", "userId", "userName", "userAvatar", "content", "createdAt"]
+    },
+    "Task": {
+      "title": "Task",
+      "description": "Activity tasks, syllabus items, or private checklists",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "dueDate": { "type": "string" },
+        "priority": { "type": "string" },
+        "category": { "type": "string" },
+        "isSynced": { "type": "boolean" },
+        "createdBy": { "type": "string" },
+        "createdById": { "type": "string" },
+        "completed": { "type": "boolean" },
+        "classmateId": { "type": "string" },
+        "groupId": { "type": "string" },
+        "attachments": { "type": "string" },
+        "isArchived": { "type": "boolean" },
+        "completedAt": { "type": "string" }
+      },
+      "required": ["id", "title", "description", "dueDate", "priority", "category", "isSynced", "createdBy", "createdById"]
+    },
+    "Subtask": {
+      "title": "Subtask",
+      "description": "Subtask items checking off main tasks",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "taskId": { "type": "string" },
+        "title": { "type": "string" },
+        "completed": { "type": "boolean" }
+      },
+      "required": ["id", "taskId", "title", "completed"]
+    },
+    "Completion": {
+      "title": "Completion",
+      "description": "Checklist execution mappings showing task status per user",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "classmateId": { "type": "string" },
+        "taskId": { "type": "string" },
+        "completed": { "type": "boolean" },
+        "completedAt": { "type": "string" }
+      },
+      "required": ["classmateId", "taskId", "completed"]
+    },
+    "TaskComment": {
+      "title": "TaskComment",
+      "description": "Real-time task chat threads files and notes",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "taskId": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userAvatar": { "type": "string" },
+        "content": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "imageAttachment": { "type": "string" }
+      },
+      "required": ["id", "taskId", "userId", "userName", "userAvatar", "content", "createdAt"]
+    },
+    "AttendanceLog": {
+      "title": "AttendanceLog",
+      "description": "Classmates daily class session attendance registration logs",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "classmateId": { "type": "string" },
+        "date": { "type": "string" },
+        "status": { "type": "string" },
+        "subject": { "type": "string" }
+      },
+      "required": ["id", "classmateId", "date", "status", "subject"]
+    },
+    "PushSubscription": {
+      "title": "PushSubscription",
+      "description": "Web push protocol subscription details for device targeting",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "subscription": { "type": "object" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["userId", "subscription", "updatedAt"]
+    },
+    "VapidConfig": {
+      "title": "VapidConfig",
+      "description": "Persistent security keys for VAPID handshakes",
+      "type": "object",
+      "properties": {
+        "publicKey": { "type": "string" },
+        "privateKey": { "type": "string" }
+      },
+      "required": ["publicKey", "privateKey"]
+    },
+    "TaskSubmission": {
+      "title": "TaskSubmission",
+      "description": "Student work submissions for asynchronous subjective/objective tasks",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "taskId": { "type": "string" },
+        "classmateId": { "type": "string" },
+        "classmateName": { "type": "string" },
+        "classmateAvatar": { "type": "string" },
+        "submittedAt": { "type": "string" },
+        "submissionType": { "type": "string" },
+        "subjectiveAnswer": { "type": "string" },
+        "objectiveAnswers": { "type": "object" },
+        "score": { "type": "number" },
+        "status": { "type": "string" },
+        "feedback": { "type": "string" },
+        "gradedBy": { "type": "string" },
+        "gradedAt": { "type": "string" }
+      },
+      "required": ["id", "taskId", "classmateId", "classmateName", "classmateAvatar", "submittedAt", "submissionType", "status"]
+    }
+  },
+  "firestore": {
+    "/profiles/{profileId}": {
+      "schema": "Profile",
+      "description": "Registered students profiles"
+    },
+    "/groups/{groupId}": {
+      "schema": "Group",
+      "description": "Study sections or classroom spaces"
+    },
+    "/groupMemberships/{membershipId}": {
+      "schema": "GroupMembership",
+      "description": "User list enrolled in each classroom group"
+    },
+    "/announcements/{announcementId}": {
+      "schema": "Announcement",
+      "description": "Broadcasts posted to groups"
+    },
+    "/tasks/{taskId}": {
+      "schema": "Task",
+      "description": "Individual checklist items and class group scope items"
+    },
+    "/subtasks/{subtaskId}": {
+      "schema": "Subtask",
+      "description": "Individual inline checkbox subtasks"
+    },
+    "/completions/{completionId}": {
+      "schema": "Completion",
+      "description": "Shared task completions by students"
+    },
+    "/taskComments/{commentId}": {
+      "schema": "TaskComment",
+      "description": "Task discussions"
+    },
+    "/attendance_logs/{logId}": {
+      "schema": "AttendanceLog",
+      "description": "Classroom attendance registry logs"
+    },
+    "/taskSubmissions/{submissionId}": {
+      "schema": "TaskSubmission",
+      "description": "Student work submissions"
+    },
+    "/push_subscriptions/{subscriptionId}": {
+      "schema": "PushSubscription",
+      "description": "Client push subscription details"
+    },
+    "/config/{configId}": {
+      "schema": "VapidConfig",
+      "description": "VAPID key persistent configs"
+    }
+  }
+}

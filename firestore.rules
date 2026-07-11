@@ -1,0 +1,344 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ==========================================
+    // 1. GLOBAL CATCH-ALL SAFETY NET
+    // ==========================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ==========================================
+    // 2. REUSABLE HARDENED GLOBAL HELPERS
+    // ==========================================
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    // Helper to get existing document data
+    function existing() {
+      return resource.data;
+    }
+
+    // ==========================================
+    // 3. STANDALONE SCHEMA VALIDATION HELPERS
+    // ==========================================
+    
+    function isValidProfile(data) {
+      return data.keys().hasAll(['id', 'name', 'avatar', 'tagline'])
+          && data.id is string && data.id.size() <= 128
+          && data.name is string && data.name.size() <= 128
+          && data.avatar is string && data.avatar.size() <= 1000
+          && data.tagline is string && data.tagline.size() <= 256
+          && (!data.keys().hasAll(['dailyLoginStreak']) || data.dailyLoginStreak is int)
+          && (!data.keys().hasAll(['studyStreak']) || data.studyStreak is int)
+          && (!data.keys().hasAll(['assignmentStreak']) || data.assignmentStreak is int)
+          && (!data.keys().hasAll(['autoDeleteCompleted']) || data.autoDeleteCompleted is bool)
+          && (!data.keys().hasAll(['points']) || data.points is int || data.points is float);
+    }
+
+    function isValidGroup(data) {
+      return data.keys().hasAll(['id', 'name', 'description', 'creatorId'])
+          && data.keys().size() == 4
+          && data.id is string && data.id.size() <= 128
+          && data.name is string && data.name.size() <= 128
+          && data.description is string && data.description.size() <= 1024
+          && data.creatorId is string && data.creatorId.size() <= 128;
+    }
+
+    function isValidGroupMembership(data) {
+      return data.keys().hasAll(['id', 'groupId', 'userId', 'role', 'canSyncTasks', 'canAnnounce'])
+          && data.keys().size() == 6
+          && data.id is string && data.id.size() <= 128
+          && data.groupId is string && data.groupId.size() <= 128
+          && data.userId is string && data.userId.size() <= 128
+          && data.role is string && (data.role == 'member' || data.role == 'leader' || data.role == 'classmate')
+          && data.canSyncTasks is bool
+          && data.canAnnounce is bool;
+    }
+
+    function isValidAnnouncement(data) {
+      return data.keys().hasAll(['id', 'groupId', 'userId', 'userName', 'userAvatar', 'content', 'createdAt'])
+          && data.id is string && data.id.size() <= 128
+          && data.groupId is string && data.groupId.size() <= 128
+          && data.userId is string && data.userId.size() <= 128
+          && data.userName is string && data.userName.size() <= 128
+          && data.userAvatar is string && data.userAvatar.size() <= 1000
+          && data.content is string && data.content.size() <= 2048
+          && data.createdAt is string && data.createdAt.size() <= 128
+          && (!data.keys().hasAll(['imageAttachment']) || data.imageAttachment is string || data.imageAttachment == null);
+    }
+
+    function isValidTask(data) {
+      return data.keys().hasAll(['id', 'title', 'description', 'dueDate', 'priority', 'category', 'isSynced', 'createdBy', 'createdById'])
+          && data.id is string && data.id.size() <= 128
+          && data.title is string && data.title.size() <= 256
+          && data.description is string && data.description.size() <= 2048
+          && data.dueDate is string && data.dueDate.size() <= 128
+          && data.priority is string && data.priority.size() <= 64
+          && data.category is string && data.category.size() <= 128
+          && data.isSynced is bool
+          && data.createdBy is string && data.createdBy.size() <= 128
+          && data.createdById is string && data.createdById.size() <= 128
+          && (!data.keys().hasAll(['completed']) || data.completed is bool)
+          && (!data.keys().hasAll(['classmateId']) || data.classmateId is string || data.classmateId == null)
+          && (!data.keys().hasAll(['groupId']) || data.groupId is string || data.groupId == null)
+          && (!data.keys().hasAll(['isArchived']) || data.isArchived is bool)
+          && (!data.keys().hasAll(['isPinned']) || data.isPinned is bool)
+          && (!data.keys().hasAll(['points']) || data.points is int || data.points is float || data.points == null)
+          && (!data.keys().hasAll(['completedAt']) || data.completedAt is string || data.completedAt == null)
+          && (!data.keys().hasAll(['subtasks']) || data.subtasks is list)
+          && (!data.keys().hasAll(['attachments']) || data.attachments is list);
+    }
+
+    function isValidSubtask(data) {
+      return data.keys().hasAll(['id', 'taskId', 'title', 'completed'])
+          && data.keys().size() == 4
+          && data.id is string && data.id.size() <= 128
+          && data.taskId is string && data.taskId.size() <= 128
+          && data.title is string && data.title.size() <= 256
+          && data.completed is bool;
+    }
+
+    function isValidCompletion(data) {
+      return data.keys().hasAll(['classmateId', 'taskId', 'completed'])
+          && data.classmateId is string && data.classmateId.size() <= 128
+          && data.taskId is string && data.taskId.size() <= 128
+          && data.completed is bool;
+    }
+
+    function isValidTaskComment(data) {
+      return data.keys().hasAll(['id', 'taskId', 'userId', 'userName', 'userAvatar', 'content', 'createdAt'])
+          && data.id is string && data.id.size() <= 128
+          && data.taskId is string && data.taskId.size() <= 128
+          && data.userId is string && data.userId.size() <= 128
+          && data.userName is string && data.userName.size() <= 128
+          && data.userAvatar is string && data.userAvatar.size() <= 1000
+          && data.content is string && data.content.size() <= 1024
+          && data.createdAt is string && data.createdAt.size() <= 128
+          && (!data.keys().hasAll(['imageAttachment']) || data.imageAttachment is string || data.imageAttachment == null);
+    }
+
+    function isValidAttendanceLog(data) {
+      return data.keys().hasAll(['id', 'classmateId', 'date', 'status', 'subject'])
+          && data.id is string && data.id.size() <= 128
+          && data.classmateId is string && data.classmateId.size() <= 128
+          && data.date is string && data.date.size() <= 128
+          && data.status is string && data.status.size() <= 64
+          && data.subject is string && data.subject.size() <= 128
+          && (!data.keys().hasAll(['groupId']) || data.groupId is string || data.groupId == null);
+    }
+
+    function isValidTaskSubmission(data) {
+      return data.keys().hasAll(['id', 'taskId', 'classmateId', 'classmateName', 'classmateAvatar', 'submittedAt', 'submissionType', 'status'])
+          && data.id is string && data.id.size() <= 128
+          && data.taskId is string && data.taskId.size() <= 128
+          && data.classmateId is string && data.classmateId.size() <= 128
+          && data.classmateName is string && data.classmateName.size() <= 128
+          && data.classmateAvatar is string && data.classmateAvatar.size() <= 1000
+          && data.submittedAt is string && data.submittedAt.size() <= 128
+          && data.submissionType is string && (data.submissionType == 'subjective' || data.submissionType == 'objective')
+          && data.status is string && (data.status == 'pending' || data.status == 'graded')
+          && (!data.keys().hasAll(['subjectiveAnswer']) || data.subjectiveAnswer is string || data.subjectiveAnswer == null)
+          // Since objectiveAnswers is a Map, we can check 'is map' or 'is Map' or allow optional check
+          && (!data.keys().hasAll(['objectiveAnswers']) || data.objectiveAnswers is map || data.objectiveAnswers == null)
+          && (!data.keys().hasAll(['score']) || data.score is int || data.score is float || data.score == null)
+          && (!data.keys().hasAll(['feedback']) || data.feedback is string || data.feedback == null)
+          && (!data.keys().hasAll(['gradedBy']) || data.gradedBy is string || data.gradedBy == null)
+          && (!data.keys().hasAll(['gradedAt']) || data.gradedAt is string || data.gradedAt == null);
+    }
+
+    // ==========================================
+    // 4. COLLECTION ACCESS CONTROL RULES
+    // ==========================================
+
+    // Profile Rules
+    match /profiles/{profileId} {
+      allow get: if isValidId(profileId);
+      allow list: if true;
+      allow create, update: if isSignedIn() && isValidId(profileId) && request.auth.uid == profileId && isValidProfile(incoming());
+      allow delete: if isSignedIn() && isValidId(profileId) && request.auth.uid == profileId;
+    }
+
+    // Group / Classrooms
+    match /groups/{groupId} {
+      allow get: if isSignedIn() && isValidId(groupId);
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(groupId) && incoming().creatorId == request.auth.uid && isValidGroup(incoming());
+      allow update: if isSignedIn() && isValidId(groupId) && existing().creatorId == request.auth.uid && isValidGroup(incoming());
+      allow delete: if isSignedIn() && isValidId(groupId) && existing().creatorId == request.auth.uid;
+    }
+
+    // Group Memberships
+    match /groupMemberships/{membershipId} {
+      allow get: if isSignedIn() && isValidId(membershipId) && (
+        resource.data.userId == request.auth.uid ||
+        exists(/databases/$(database)/documents/groupMemberships/$(resource.data.groupId + "-" + request.auth.uid))
+      );
+      allow list: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.groupId != null
+      );
+      allow create: if isSignedIn() && isValidId(membershipId) && isValidGroupMembership(incoming()) 
+                     && (incoming().userId == request.auth.uid || get(/databases/$(database)/documents/groups/$(incoming().groupId)).data.creatorId == request.auth.uid);
+      allow update: if isSignedIn() && isValidId(membershipId) && isValidGroupMembership(incoming()) 
+                     && (existing().userId == request.auth.uid || get(/databases/$(database)/documents/groups/$(existing().groupId)).data.creatorId == request.auth.uid);
+      allow delete: if isSignedIn() && isValidId(membershipId) 
+                     && (existing().userId == request.auth.uid || get(/databases/$(database)/documents/groups/$(existing().groupId)).data.creatorId == request.auth.uid);
+    }
+
+    // Announcements
+    match /announcements/{announcementId} {
+      allow get: if isSignedIn() && isValidId(announcementId) && (
+        resource.data.groupId != null && 
+        exists(/databases/$(database)/documents/groupMemberships/$(resource.data.groupId + "-" + request.auth.uid))
+      );
+      allow list: if isSignedIn() && resource.data.groupId != null;
+      allow create: if isSignedIn() && isValidId(announcementId) && incoming().userId == request.auth.uid && isValidAnnouncement(incoming())
+                     && (incoming().groupId != null 
+                          && (get(/databases/$(database)/documents/groups/$(incoming().groupId)).data.creatorId == request.auth.uid 
+                              || get(/databases/$(database)/documents/groupMemberships/$(incoming().groupId + "-" + request.auth.uid)).data.canAnnounce == true));
+      allow update, delete: if isSignedIn() && isValidId(announcementId) && existing().userId == request.auth.uid;
+    }
+
+    // Tasks / Homework assignments
+    match /tasks/{taskId} {
+      allow get: if isSignedIn() && isValidId(taskId) && (
+        resource.data.createdById == request.auth.uid ||
+        resource.data.classmateId == request.auth.uid ||
+        (resource.data.isSynced == true && resource.data.groupId != null && exists(/databases/$(database)/documents/groupMemberships/$(resource.data.groupId + "-" + request.auth.uid)))
+      );
+      allow list: if isSignedIn() && (
+        resource.data.createdById == request.auth.uid ||
+        resource.data.classmateId == request.auth.uid ||
+        resource.data.isSynced == true
+      );
+      allow create: if isSignedIn() && isValidId(taskId) && isValidTask(incoming()) 
+                     && (incoming().createdById == request.auth.uid || (incoming().classmateId != null && incoming().classmateId == request.auth.uid))
+                     && (!incoming().isSynced || (
+                          incoming().groupId != null 
+                          && (
+                            get(/databases/$(database)/documents/groups/$(incoming().groupId)).data.creatorId == request.auth.uid 
+                            || get(/databases/$(database)/documents/groupMemberships/$(incoming().groupId + "-" + request.auth.uid)).data.canSyncTasks == true
+                          )
+                        ));
+      allow update: if isSignedIn() && isValidId(taskId) && isValidTask(incoming()) 
+                     && (existing().createdById == request.auth.uid || (existing().classmateId != null && existing().classmateId == request.auth.uid) 
+                         || (existing().isSynced && existing().groupId != null && exists(/databases/$(database)/documents/groupMemberships/$(existing().groupId + "-" + request.auth.uid))));
+      allow delete: if isSignedIn() && isValidId(taskId) 
+                     && (existing().createdById == request.auth.uid || (existing().classmateId != null && existing().classmateId == request.auth.uid) 
+                         || (existing().isSynced && existing().groupId != null && get(/databases/$(database)/documents/groups/$(existing().groupId)).data.creatorId == request.auth.uid));
+    }
+
+    // Subtasks check-offs
+    match /subtasks/{subtaskId} {
+      allow get: if isSignedIn() && isValidId(subtaskId);
+      allow list: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(subtaskId) && isValidSubtask(incoming());
+      allow delete: if isSignedIn() && isValidId(subtaskId);
+    }
+
+    // Task completions
+    match /completions/{completionId} {
+      allow get: if isSignedIn() && isValidId(completionId) && (
+        resource.data.classmateId == request.auth.uid ||
+        get(/databases/$(database)/documents/tasks/$(resource.data.taskId)).data.createdById == request.auth.uid
+      );
+      allow list: if isSignedIn() && (
+        resource.data.classmateId == request.auth.uid ||
+        resource.data.taskId != null
+      );
+      allow create, update: if isSignedIn() && isValidId(completionId) && isValidCompletion(incoming()) && incoming().classmateId == request.auth.uid;
+      allow delete: if isSignedIn() && isValidId(completionId) && existing().classmateId == request.auth.uid;
+    }
+
+    // Task Comments rules
+    match /taskComments/{commentId} {
+      allow get: if isSignedIn() && isValidId(commentId) && (
+        get(/databases/$(database)/documents/tasks/$(resource.data.taskId)).data.createdById == request.auth.uid ||
+        get(/databases/$(database)/documents/tasks/$(resource.data.taskId)).data.classmateId == request.auth.uid ||
+        (get(/databases/$(database)/documents/tasks/$(resource.data.taskId)).data.isSynced == true && 
+         get(/databases/$(database)/documents/tasks/$(resource.data.taskId)).data.groupId != null && 
+         exists(/databases/$(database)/documents/groupMemberships/$(get(/databases/$(database)/documents/tasks/$(resource.data.taskId)).data.groupId + "-" + request.auth.uid)))
+      );
+      allow list: if isSignedIn() && resource.data.taskId != null;
+      allow create: if isSignedIn() && isValidId(commentId) && incoming().userId == request.auth.uid && isValidTaskComment(incoming());
+      allow update: if isSignedIn() && isValidId(commentId) && existing().userId == request.auth.uid && isValidTaskComment(incoming());
+      allow delete: if isSignedIn() && isValidId(commentId) && existing().userId == request.auth.uid;
+    }
+
+    // Classroom Attendance registry
+    match /attendance_logs/{logId} {
+      allow get: if isSignedIn() && isValidId(logId) && (
+        resource.data.classmateId == request.auth.uid ||
+        (resource.data.groupId != null && get(/databases/$(database)/documents/groups/$(resource.data.groupId)).data.creatorId == request.auth.uid)
+      );
+      allow list: if isSignedIn() && (
+        resource.data.classmateId == request.auth.uid ||
+        resource.data.groupId != null
+      );
+      allow create: if isSignedIn() && isValidId(logId) && incoming().classmateId == request.auth.uid && isValidAttendanceLog(incoming());
+      allow update: if isSignedIn() && isValidId(logId) && existing().classmateId == request.auth.uid && incoming().classmateId == request.auth.uid && isValidAttendanceLog(incoming());
+      allow delete: if false;
+    }
+
+    // Task Submissions rules
+    match /taskSubmissions/{submissionId} {
+      allow get: if isSignedIn() && isValidId(submissionId) && (
+        resource.data.classmateId == request.auth.uid ||
+        get(/databases/$(database)/documents/tasks/$(resource.data.taskId)).data.createdById == request.auth.uid ||
+        (get(/databases/$(database)/documents/tasks/$(resource.data.taskId)).data.isSynced == true && 
+         get(/databases/$(database)/documents/tasks/$(resource.data.taskId)).data.groupId != null && 
+         exists(/databases/$(database)/documents/groupMemberships/$(get(/databases/$(database)/documents/tasks/$(resource.data.taskId)).data.groupId + "-" + request.auth.uid)))
+      );
+      allow list: if isSignedIn() && (
+        resource.data.classmateId == request.auth.uid ||
+        resource.data.taskId != null
+      );
+      allow create: if isSignedIn() && isValidId(submissionId) && isValidTaskSubmission(incoming()) 
+                     && incoming().classmateId == request.auth.uid;
+      allow update: if isSignedIn() && isValidId(submissionId) && isValidTaskSubmission(incoming()) 
+                     && (
+                       // Task creator (Teacher) grading the submission
+                       (get(/databases/$(database)/documents/tasks/$(existing().taskId)).data.createdById == request.auth.uid
+                        && incoming().classmateId == existing().classmateId
+                        && incoming().taskId == existing().taskId
+                        && incoming().id == existing().id)
+                       || 
+                       // Student updating their own pending submission
+                       (existing().classmateId == request.auth.uid 
+                        && existing().status == 'pending'
+                        && incoming().classmateId == request.auth.uid
+                        && incoming().taskId == existing().taskId
+                        && incoming().id == existing().id
+                        && incoming().status == 'pending'
+                        && !incoming().keys().hasAll(['score'])
+                        && !incoming().keys().hasAll(['feedback'])
+                        && !incoming().keys().hasAll(['gradedBy'])
+                        && !incoming().keys().hasAll(['gradedAt']))
+                     );
+      allow delete: if isSignedIn() && isValidId(submissionId) 
+                     && (existing().classmateId == request.auth.uid 
+                         || get(/databases/$(database)/documents/tasks/$(existing().taskId)).data.createdById == request.auth.uid);
+    }
+
+    // Web Push Subscriptions (Fully managed by Node backend, clients cannot direct read/write)
+    match /push_subscriptions/{subscriptionId} {
+      allow read, write: if false;
+    }
+
+    // Config & VAPID keys (Fully managed by Node backend, clients cannot direct read/write)
+    match /config/{configId} {
+      allow read, write: if false;
+    }
+  }
+}

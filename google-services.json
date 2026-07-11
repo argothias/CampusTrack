@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "753786950815",
+    "project_id": "tasktr-6b32a",
+    "storage_bucket": "tasktr-6b32a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:753786950815:android:f820bd81be20307cb93eaa",
+        "android_client_info": {
+          "package_name": "com.ampere.tasker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "753786950815-t0b93ciplcf4jrgose1qm0tcgriublhm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAy3NEykEhVND9pUQupBdmRqBUcpoBlAQ0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "753786950815-t0b93ciplcf4jrgose1qm0tcgriublhm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:753786950815:android:f2b674cec9e925e0b93eaa",
+        "android_client_info": {
+          "package_name": "com.app.takima"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "753786950815-t0b93ciplcf4jrgose1qm0tcgriublhm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAy3NEykEhVND9pUQupBdmRqBUcpoBlAQ0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "753786950815-t0b93ciplcf4jrgose1qm0tcgriublhm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

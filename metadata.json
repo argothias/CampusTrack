@@ -1,0 +1,6 @@
+{
+  "name": "CampusTrack",
+  "description": "An elegant, secure student planner allowing study groups to synchronize academic tasks from a Coordinator account, manage private personal tasks, add manual milestones, organize workloads with visual categories, and track deep study sprints using a Pomodoro timer.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
