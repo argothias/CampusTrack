@@ -53,39 +53,6 @@ CampusTrack features a robust, **real-time, offline-first sync engine** using Fi
 
 ---
 
-## Local Installation & Setup
-
-1. **Clone the Repository**:
-   ```bash
-   git clone <your-repository-url>
-   cd <your-repository-folder>
-   ```
-
-2. **Install Dependencies**:
-   ```bash
-   npm install
-   ```
-
-3. **Configure Environment Variables**:
-   Create a `.env` file in the root directory and add your Firebase credentials:
-   ```env
-   # .env
-   # Setup your standard Firestore environment variables here
-   ```
-
-4. **Run Dev Server**:
-   ```bash
-   npm run dev
-   ```
-   Open `http://localhost:3000` in your browser.
-
-5. **Build for Production**:
-   ```bash
-   npm run build
-   ```
-
----
-
 ## Security & Rules
 
 CampusTrack is backed by comprehensive **Firestore Security Rules** ensuring strict access controls:
