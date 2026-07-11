@@ -1,4 +1,4 @@
-# CampusTrack ðŸŽ“âœ¨
+# CampusTrack
 
 CampusTrack is a highly polished, secure, and collaborative academic planner designed for students and study groups. It blends private personal task management with cloud-synchronized group tasks, real-time announcements, deep focus tracking, and a peer study point leaderboard.
 
@@ -6,7 +6,7 @@ CampusTrack features a robust, **real-time, offline-first sync engine** using Fi
 
 ---
 
-## ðŸš€ Key Features & Capabilities
+## Key Features & Capabilities
 
 ### 1. Unified Task & Assignment Engine
 * **Private vs. Shared Sync Tasks**: Manage personal private tasks alongside shared group assignments assigned by group Coordinators.
@@ -42,7 +42,7 @@ CampusTrack features a robust, **real-time, offline-first sync engine** using Fi
 
 ---
 
-## ðŸ› ï¸ Built With
+## Built With
 
 * **Frontend Framework**: [React 18](https://react.dev/) + [Vite](https://vite.dev/) (Client-Side SPA Architecture)
 * **Programming Language**: [TypeScript](https://www.typescriptlang.org/) (Strict type-safe interfaces)
@@ -53,7 +53,7 @@ CampusTrack features a robust, **real-time, offline-first sync engine** using Fi
 
 ---
 
-## ðŸ“¦ Local Installation & Setup
+## Local Installation & Setup
 
 1. **Clone the Repository**:
    ```bash
