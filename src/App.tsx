@@ -624,6 +624,11 @@ export default function App() {
   const [googleToken, setGoogleToken] = useState<string | null>(null);
   const [_needsGoogleAuth, setNeedsGoogleAuth] = useState(true);
 
+  // Google Auth Bridge states
+  const [bridgeLoading, setBridgeLoading] = useState(false);
+  const [bridgeError, setBridgeError] = useState<string | null>(null);
+  const [bridgeSuccess, setBridgeSuccess] = useState(false);
+
   // Profile customization states
   const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
   const [_isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
@@ -1591,6 +1596,9 @@ export default function App() {
           const myProfile = { id: docSnap.id, ...docSnap.data() } as StudentProfile;
           setProfiles([myProfile]);
           checkAndUpdateLoginStreak(myProfile);
+          if (myProfile.googleToken) {
+            setGoogleToken(myProfile.googleToken);
+          }
         }
         setLoading(false);
       }, err => {
@@ -2132,6 +2140,17 @@ export default function App() {
   const openGooglePicker = async () => {
     let tokenToUse = googleToken;
     if (!tokenToUse) {
+      const isWebView = typeof window !== 'undefined' && (
+        /wv/i.test(window.navigator.userAgent) || 
+        (window.navigator.userAgent.includes('Android') && !window.navigator.userAgent.includes('Chrome/')) || 
+        window.location.protocol === 'file:' ||
+        window.location.protocol === 'capacitor:' ||
+        window.location.protocol === 'chrome-extension:'
+      );
+      if (isWebView) {
+        alert("Google account connection is blocked inside this APK app by Google's strict security policies. Please use the Web version of this app in Chrome/Safari to connect and access Google Drive files.");
+        return;
+      }
       if (confirm("Accessing Google Drive files requires a connected Google account. Launch authentication popup?")) {
         try {
           const res = await googleSignIn();
@@ -2227,6 +2246,17 @@ export default function App() {
     if (source === 'drive') {
       let tokenToUse = googleToken;
       if (!tokenToUse) {
+        const isWebView = typeof window !== 'undefined' && (
+          /wv/i.test(window.navigator.userAgent) || 
+          (window.navigator.userAgent.includes('Android') && !window.navigator.userAgent.includes('Chrome/')) || 
+          window.location.protocol === 'file:' ||
+          window.location.protocol === 'capacitor:' ||
+          window.location.protocol === 'chrome-extension:'
+        );
+        if (isWebView) {
+          alert("Google account connection is blocked inside this APK app by Google's strict security policies. Please use the Web version of this app in Chrome/Safari to connect and attach Google Drive files.");
+          return;
+        }
         if (confirm("Attaching from Google Drive requires connecting your Google account. Connect now?")) {
           try {
             const res = await googleSignIn();
@@ -2340,6 +2370,17 @@ export default function App() {
   const handleGoogleSignIn = async () => {
     setFormError(null);
     setFormSuccess(null);
+    const isWebView = typeof window !== 'undefined' && (
+      /wv/i.test(window.navigator.userAgent) || 
+      (window.navigator.userAgent.includes('Android') && !window.navigator.userAgent.includes('Chrome/')) || 
+      window.location.protocol === 'file:' ||
+      window.location.protocol === 'capacitor:' ||
+      window.location.protocol === 'chrome-extension:'
+    );
+    if (isWebView) {
+      setFormError("Google sign-in is restricted inside APK app WebViews by Google's security guidelines. Please use your Student Username & Password to sign in, or open the Web app in your mobile browser to sign in with Google.");
+      return;
+    }
     try {
       const res = await googleSignIn();
       if (!res) return;
@@ -3602,6 +3643,110 @@ export default function App() {
 
   // Handle static terms and privacy routes within the single-page application
   const currentPath = window.location.pathname.toLowerCase().trim();
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const isBridgeAuth = urlParams.get('bridgeAuth') === 'true';
+  const bridgeUid = urlParams.get('uid');
+
+  const handleBridgeAuthorize = async () => {
+    if (!bridgeUid) return;
+    setBridgeLoading(true);
+    setBridgeError(null);
+    try {
+      const res = await googleSignIn();
+      if (!res) {
+        throw new Error("No authorization result returned from Google.");
+      }
+      const { user, accessToken } = res;
+      await updateProfile(bridgeUid, {
+        googleToken: accessToken,
+        googleEmail: user.email || 'connected_workspace_user',
+        googleTokenUpdatedAt: new Date().toISOString()
+      });
+      setBridgeSuccess(true);
+    } catch (err: any) {
+      console.error("Bridge authorization error:", err);
+      setBridgeError(err.message || "Authorization failed. Please ensure you allow all permissions and try again.");
+    } finally {
+      setBridgeLoading(false);
+    }
+  };
+
+  if (isBridgeAuth && bridgeUid) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 text-center space-y-6 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 animate-pulse" />
+          
+          <div className="mx-auto w-16 h-16 rounded-2xl bg-indigo-950/60 border border-indigo-500/30 flex items-center justify-center shadow-inner">
+            <span className="text-3xl">📊</span>
+          </div>
+          
+          <div className="space-y-2">
+            <h1 className="text-xl font-black text-white tracking-tight">Android App Google Auth Bridge</h1>
+            <p className="text-xs text-slate-400 leading-relaxed max-w-xs mx-auto">
+              Securely authorize Google Workspace on your Android APK app via this standard mobile browser tab.
+            </p>
+          </div>
+
+          <div className="bg-slate-950/60 border border-slate-850 p-4 rounded-2xl text-left space-y-3">
+            <div className="flex items-center gap-2 text-[10.5px] font-mono text-indigo-400 font-bold uppercase tracking-wide">
+              <span>Device Authentication Info</span>
+            </div>
+            <div className="space-y-1.5 text-[11px] text-slate-300">
+              <div className="flex justify-between">
+                <span className="text-slate-500 font-mono">App Client ID:</span>
+                <span className="font-mono text-slate-400 font-medium truncate max-w-[200px]">{bridgeUid}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500 font-mono">Channel:</span>
+                <span className="text-emerald-400 font-mono font-semibold">Secure Direct-to-Firestore</span>
+              </div>
+            </div>
+          </div>
+
+          {bridgeError ? (
+            <div className="p-3.5 bg-red-950/40 border border-red-900/40 rounded-xl text-xs text-red-300 flex items-center gap-2.5">
+              <div className="text-left leading-normal">{bridgeError}</div>
+            </div>
+          ) : bridgeSuccess ? (
+            <div className="p-3.5 bg-emerald-950/40 border border-emerald-900/30 rounded-xl space-y-2 text-center">
+              <div className="text-xs text-emerald-300 font-bold flex items-center justify-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                Connection Fully Verified!
+              </div>
+              <p className="text-[10px] text-slate-400 leading-relaxed">
+                Your credentials have been securely stored in your Firestore profile. You can now **close this browser tab** and return to your APK app. It has unlocked automatically!
+              </p>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={handleBridgeAuthorize}
+              disabled={bridgeLoading}
+              className={`w-full bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-3 px-4 rounded-2xl text-xs flex items-center justify-center gap-2.5 cursor-pointer transition-all active:scale-[0.98] shadow-lg shadow-indigo-950/40 ${bridgeLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+            >
+              {bridgeLoading ? (
+                <>
+                  <div className="w-4 h-4 rounded-full border-2 border-white/20 border-t-white animate-spin animate-infinite" />
+                  <span>Contacting Google OAuth...</span>
+                </>
+              ) : (
+                <>
+                  <span>Authorize Workspace Account</span>
+                </>
+              )}
+            </button>
+          )}
+
+          <div className="text-[10px] text-slate-500 font-mono">
+            Powered by StudySync Cryptographic Token Bridge
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (currentPath === '/privacy') {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col justify-between p-4 sm:p-8 font-sans text-slate-300">

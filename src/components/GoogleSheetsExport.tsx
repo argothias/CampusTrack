@@ -7,7 +7,10 @@ import {
   AlertTriangle, 
   Calendar,
   ExternalLink,
-  Sparkles
+  Sparkles,
+  Copy,
+  Check,
+  AlertCircle
 } from 'lucide-react';
 import { Task, StudentProfile, SyncedTaskCompletion, AttendanceLog } from '../types';
 
@@ -39,6 +42,46 @@ export default function GoogleSheetsExport({
   const [exportedUrl, setExportedUrl] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [isAwaitingBridge, setIsAwaitingBridge] = useState(false);
+
+  const isWebView = useMemo(() => {
+    if (typeof window === 'undefined' || !window.navigator) return false;
+    const ua = window.navigator.userAgent || '';
+    return (
+      /wv/i.test(ua) ||
+      (ua.includes('Android') && !ua.includes('Chrome/')) ||
+      ua.includes('FBAN') ||
+      ua.includes('FBAV') ||
+      window.location.protocol === 'file:' ||
+      window.location.protocol === 'capacitor:' ||
+      window.location.protocol === 'chrome-extension:'
+    );
+  }, []);
+
+  const webAppUrl = "https://ais-pre-4tgsuzuwe3pwzlzchjfwfx-1044932737425.asia-southeast1.run.app";
+
+  const handleCopyLink = () => {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(webAppUrl);
+    } else {
+      // Fallback for older WebView engines
+      const textarea = document.createElement("textarea");
+      textarea.value = webAppUrl;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand("copy");
+      } catch (err) {
+        console.warn("execCommand fallback failed", err);
+      }
+      document.body.removeChild(textarea);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   // Helper to parse dates and check range
   const isWithinTimeFrame = useCallback((dateStr: string | undefined): boolean => {
@@ -330,25 +373,119 @@ export default function GoogleSheetsExport({
       </div>
 
       {!googleToken ? (
-        <div className="p-4 bg-slate-950/40 border border-slate-850 rounded-2xl space-y-3.5 text-center">
-          <div className="mx-auto w-10 h-10 rounded-full bg-indigo-950/60 border border-indigo-900/40 flex items-center justify-center">
-            <FileSpreadsheet className="w-5 h-5 text-indigo-400" />
+        isAwaitingBridge ? (
+          <div className="p-5 bg-slate-950/60 border border-indigo-900/40 rounded-3xl space-y-4 text-center">
+            <div className="mx-auto w-12 h-12 rounded-full bg-indigo-950/80 border border-indigo-500/20 flex items-center justify-center relative">
+              <span className="w-2.5 h-2.5 rounded-full bg-indigo-400 animate-ping absolute" />
+              <FileSpreadsheet className="w-5 h-5 text-indigo-400 animate-pulse relative z-10" />
+            </div>
+            
+            <div className="space-y-1">
+              <h5 className="text-xs font-black text-indigo-300 uppercase tracking-wider font-mono">📡 Awaiting Web Authorization...</h5>
+              <p className="text-[10px] text-slate-300 leading-relaxed max-w-xs mx-auto">
+                We launched a secure browser tab to authorize your Google Workspace account. Please complete the login on Chrome/Safari.
+              </p>
+            </div>
+
+            <div className="p-3 bg-slate-900/80 rounded-xl border border-slate-850 text-left space-y-1.5 font-mono text-[9.5px]">
+              <div className="flex justify-between items-center text-slate-400">
+                <span>Firestore Sync Channel:</span>
+                <span className="text-emerald-400 font-bold flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Active Listening
+                </span>
+              </div>
+              <p className="text-[8.5px] text-slate-500 leading-normal pt-1 border-t border-slate-850">
+                This APK app will automatically refresh and connect the moment the standard browser login succeeds!
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-2 pt-1">
+              <a
+                href={`${webAppUrl}?bridgeAuth=true&uid=${activeProfileId || ''}`}
+                target="_blank"
+                referrerPolicy="no-referrer"
+                rel="noopener noreferrer"
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-2.5 px-3 rounded-xl text-[10px] flex items-center justify-center gap-1.5 transition-all text-center cursor-pointer shadow-md"
+              >
+                <ExternalLink className="w-3.5 h-3.5 text-indigo-200" />
+                <span>Re-open Auth Tab</span>
+              </a>
+              
+              <button
+                type="button"
+                onClick={() => setIsAwaitingBridge(false)}
+                className="text-[10px] text-slate-500 hover:text-slate-400 underline font-semibold transition-colors cursor-pointer"
+              >
+                Cancel and return
+              </button>
+            </div>
           </div>
-          <div className="space-y-1">
-            <h5 className="text-xs font-black text-slate-200">Workspace Authorization Required</h5>
-            <p className="text-[9.5px] text-slate-400 max-w-sm mx-auto leading-normal">
-              To securely connect and export files to Google Drive & Google Sheets on your account, please sign in with your Google workspace.
+        ) : isWebView ? (
+          <div className="p-4 bg-slate-950/60 border border-amber-900/40 rounded-2xl space-y-4 text-left">
+            <div className="flex items-center gap-2 text-amber-400">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <h5 className="text-xs font-black uppercase tracking-tight font-mono">Mobile App Connection Notice</h5>
+            </div>
+            
+            <p className="text-[10px] text-slate-300 leading-relaxed">
+              Google's strict security guidelines **prevent direct Google Account sign-ins inside embedded web views (APK apps)**. 
             </p>
+
+            <div className="bg-slate-900/80 p-3 rounded-xl border border-slate-850 space-y-2">
+              <span className="text-[9px] font-mono font-black text-indigo-400 uppercase tracking-wide block">💡 Seamless Real-Time Solution:</span>
+              <p className="text-[9.5px] text-slate-400 leading-normal">
+                Authorize the app securely in your standard browser (Chrome/Safari) using the **Google Auth Bridge**. Your APK app will automatically detect and link the connection instantly!
+              </p>
+            </div>
+
+            <div className="pt-1.5 space-y-2">
+              <a
+                href={`${webAppUrl}?bridgeAuth=true&uid=${activeProfileId || ''}`}
+                onClick={() => setIsAwaitingBridge(true)}
+                target="_blank"
+                referrerPolicy="no-referrer"
+                rel="noopener noreferrer"
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3 px-4 rounded-xl text-[10.5px] flex items-center justify-center gap-2 cursor-pointer transition-all shadow-md text-center"
+              >
+                <Sparkles className="w-4 h-4 text-indigo-200" />
+                <span>Connect with Google Auth Bridge</span>
+              </a>
+
+              <div className="flex items-center gap-2 bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800 text-[9px] font-mono text-slate-300 select-all">
+                <span className="truncate flex-1 font-semibold">{webAppUrl}</span>
+                <button
+                  type="button"
+                  onClick={handleCopyLink}
+                  className="p-1 hover:bg-slate-800 rounded text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer"
+                  title="Copy web link"
+                >
+                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={onGoogleSignIn}
-            className="w-full max-w-xs mx-auto bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer transition-all shadow-3xs"
-          >
-            <Sparkles className="w-4 h-4" />
-            <span>Connect Workspace Account</span>
-          </button>
-        </div>
+        ) : (
+          <div className="p-4 bg-slate-950/40 border border-slate-850 rounded-2xl space-y-3.5 text-center">
+            <div className="mx-auto w-10 h-10 rounded-full bg-indigo-950/60 border border-indigo-900/40 flex items-center justify-center">
+              <FileSpreadsheet className="w-5 h-5 text-indigo-400" />
+            </div>
+            <div className="space-y-1">
+              <h5 className="text-xs font-black text-slate-200">Workspace Authorization Required</h5>
+              <p className="text-[9.5px] text-slate-400 max-w-sm mx-auto leading-normal">
+                To securely connect and export files to Google Drive & Google Sheets on your account, please sign in with your Google workspace.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onGoogleSignIn}
+              className="w-full max-w-xs mx-auto bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer transition-all shadow-3xs"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>Connect Workspace Account</span>
+            </button>
+          </div>
+        )
       ) : (
         <div className="space-y-4">
           {/* STEP 1: SELECT EXPORT TYPE */}

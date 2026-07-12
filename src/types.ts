@@ -76,6 +76,9 @@ export interface StudentProfile {
   points?: number;
   equippedBadge?: string;
   groupId?: string | null;
+  googleToken?: string;
+  googleEmail?: string;
+  googleTokenUpdatedAt?: string;
 }
 
 export interface Group {
