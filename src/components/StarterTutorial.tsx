@@ -11,14 +11,15 @@ interface StarterTutorialProps {
   activeTab: 'tasks' | 'create' | 'classroom' | 'focus' | 'archive' | 'streaks' | 'settings' | 'productivity';
   setActiveTab: (tab: 'tasks' | 'create' | 'classroom' | 'focus' | 'archive' | 'streaks' | 'settings' | 'productivity') => void;
   activeGroupId: string | null;
+  onStartInteractiveTour?: () => void;
 }
 
-export default function StarterTutorial({ isOpen, onClose, activeTab: _activeTab, setActiveTab, activeGroupId: _activeGroupId }: StarterTutorialProps) {
+export default function StarterTutorial({ isOpen, onClose, activeTab: _activeTab, setActiveTab, activeGroupId: _activeGroupId, onStartInteractiveTour }: StarterTutorialProps) {
   const [currentStep, setCurrentStep] = useState(0);
 
   if (!isOpen) return null;
 
-  const totalSteps = 4;
+  const totalSteps = onStartInteractiveTour ? 5 : 4;
 
   const handleRedirectTab = (tab: 'tasks' | 'create' | 'classroom' | 'focus' | 'archive' | 'streaks' | 'settings' | 'productivity') => {
     setActiveTab(tab);
@@ -213,7 +214,38 @@ export default function StarterTutorial({ isOpen, onClose, activeTab: _activeTab
           </div>
         </div>
       )
-    }
+    },
+    ...(onStartInteractiveTour ? [{
+      title: "Interactive Pointer Tour",
+      subtitle: "See where the controls are live in the app",
+      icon: <Sparkles className="w-10 h-10 text-violet-600" />,
+      bgGradient: "from-violet-50 to-violet-100/40",
+      content: (
+        <div className="space-y-4 text-slate-700 text-xs sm:text-sm leading-relaxed text-center py-2">
+          <p className="text-slate-600 font-medium">
+            Ready to explore? We built an interactive, step-by-step tour that points out physical buttons on your screen.
+          </p>
+
+          <div className="bg-indigo-50 border border-indigo-150 p-4 rounded-2xl max-w-sm mx-auto shadow-3xs text-left space-y-2">
+            <h4 className="font-extrabold text-indigo-950 text-xs flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-indigo-600" />
+              Live Interactive Pointing Guide
+            </h4>
+            <p className="text-[11px] text-slate-600 leading-relaxed">
+              This tour will highlight and explain major control elements like class switcher, theme settings, and task checklists directly on your workspace.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={onStartInteractiveTour}
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-md active:scale-98"
+          >
+            <Sparkles className="w-4 h-4 animate-spin-slow" /> Start Live Interactive Tour ⚡
+          </button>
+        </div>
+      )
+    }] : [])
   ];
 
   const handleNext = () => {

@@ -122,6 +122,7 @@ export interface SyncedTaskCompletion {
   taskId: string;
   completed: boolean;
   completedAt?: string;
+  completedSubtaskIds?: string[];
 }
 
 export interface AttendanceLog {

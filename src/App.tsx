@@ -10,7 +10,7 @@ import {
   Check, Layout, Info, Trash, Square, Tag, 
   AlignLeft, RefreshCw, Flame, ChevronDown,
   Megaphone, UserPlus, Shield, ShieldCheck, Send, LogOut, Archive, Lock, WifiOff,
-  Edit3, Paperclip, Link, FileText, UploadCloud, ChevronRight, HelpCircle,
+  Edit3, Paperclip, Link, FileText, UploadCloud, ChevronRight, HelpCircle, ArrowRight,
   MessageSquare, X, Menu, Image, Pin, Palette, Sun, Moon, Coffee, Settings,
   TrendingUp, Trophy, User, GraduationCap, Bell,
   Sparkles, Star, Zap, CalendarClock, University, CheckSquare, BookOpen
@@ -664,6 +664,7 @@ export default function App() {
   const [showSortSheet, setShowSortSheet] = useState(false);
   const [showAnnouncements, setShowAnnouncements] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [guideStep, setGuideStep] = useState<number | null>(null);
 
   // Default blank white profile picture SVG database payload
   const BLANK_WHITE_PICTURE = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'><rect width='100%' height='100%' fill='%23FFFFFF'/><circle cx='75' cy='75' r='45' fill='%23F1F5F9' stroke='%23CBD5E1' stroke-width='2'/><path d='M75 80c-15 0-25 8-25 15v5h50v-5c0-7-10-15-25-15z' fill='%2394A3B8'/><circle cx='75' cy='55' r='15' fill='%2394A3B8'/></svg>";
@@ -1284,8 +1285,35 @@ export default function App() {
 
   const latestActiveTask = useMemo(() => {
     if (!activeDetailTask) return null;
-    return tasks.find(t => t.id === activeDetailTask.id) || activeDetailTask;
-  }, [tasks, activeDetailTask]);
+    const rawTask = tasks.find(t => t.id === activeDetailTask.id) || activeDetailTask;
+    if (rawTask && rawTask.isSynced && activeProfileId) {
+      const comp = completions.find(c => c.classmateId === activeProfileId && c.taskId === rawTask.id);
+      const isComp = comp ? comp.completed : false;
+      const completedSubtaskIds = comp?.completedSubtaskIds || [];
+      const decoratedSubtasks = rawTask.subtasks?.map(s => ({
+        ...s,
+        completed: isComp ? true : completedSubtaskIds.includes(s.id)
+      })) || [];
+      
+      const subCount = decoratedSubtasks.length;
+      const subCompCount = decoratedSubtasks.filter(s => s.completed).length;
+      let status: 'todo' | 'in_progress' | 'completed' = 'todo';
+      if (isComp) {
+        status = 'completed';
+      } else if (subCount > 0 && subCompCount > 0) {
+        status = 'in_progress';
+      }
+
+      return {
+        ...rawTask,
+        completed: isComp,
+        completedAt: isComp ? (comp?.completedAt || null) : null,
+        subtasks: decoratedSubtasks,
+        status: status
+      };
+    }
+    return rawTask;
+  }, [tasks, activeDetailTask, completions, activeProfileId]);
 
   const canModifyActiveTask = useMemo(() => {
     if (!latestActiveTask) return false;
@@ -2034,6 +2062,16 @@ export default function App() {
       }
     }
   }, [activeProfileId, activeProfile?.onboardingCompleted]);
+
+  // Auto-trigger interactive pointing guide on first-time login
+  useEffect(() => {
+    if (activeProfileId && activeProfile?.onboardingCompleted === true && !showTutorial) {
+      const guideCompleted = localStorage.getItem('tasktrack_interactive_guide_completed');
+      if (guideCompleted !== 'true') {
+        setGuideStep(0);
+      }
+    }
+  }, [activeProfileId, activeProfile?.onboardingCompleted, showTutorial]);
 
   // Handle Edit/Customize Profile Submission
   const handleUpdateProfile = async (e: React.FormEvent) => {
@@ -3018,50 +3056,50 @@ export default function App() {
   const toggleTaskCompleteness = async (task: Task, isSubtaskCall = false, subtaskId?: string, subtaskPrevVal?: boolean) => {
     if (!activeProfileId) return;
     try {
+      const comp = completions.find(c => c.classmateId === activeProfileId && c.taskId === task.id);
+      const wasCompleted = task.isSynced 
+        ? (comp ? comp.completed : false)
+        : task.completed;
+
       if (task.isSynced) {
+        const currentCompletedSubtaskIds = comp?.completedSubtaskIds || [];
+        
         if (isSubtaskCall && subtaskId) {
-          const updatedSub = task.subtasks?.map(s => s.id === subtaskId ? { ...s, completed: !subtaskPrevVal } : s);
-          const allSubComplete = updatedSub && updatedSub.length > 0 && updatedSub.every(s => s.completed);
-          
-          if (allSubComplete) {
-            // Finish the whole task: save completion
-            const completion: SyncedTaskCompletion = {
-              id: `${activeProfileId}-${task.id}`,
-              classmateId: activeProfileId,
-              taskId: task.id,
-              completed: true,
-              completedAt: new Date().toISOString()
-            };
-            await saveCompletion(completion);
-            await updateTask(task.id, { 
-              subtasks: updatedSub, 
-              completed: true, 
-              completedAt: new Date().toISOString(),
-              isArchived: false, 
-              status: 'completed' 
-            });
+          let updatedSubtaskIds = [...currentCompletedSubtaskIds];
+          const isCurrentlyCompleted = currentCompletedSubtaskIds.includes(subtaskId);
+          if (isCurrentlyCompleted) {
+            updatedSubtaskIds = updatedSubtaskIds.filter(id => id !== subtaskId);
           } else {
-            await updateTask(task.id, { subtasks: updatedSub });
+            updatedSubtaskIds.push(subtaskId);
           }
+          
+          const allSubtaskIds = task.subtasks?.map(s => s.id) || [];
+          const allSubComplete = allSubtaskIds.length > 0 && allSubtaskIds.every(id => updatedSubtaskIds.includes(id));
+          
+          const completion: SyncedTaskCompletion = {
+            id: `${activeProfileId}-${task.id}`,
+            classmateId: activeProfileId,
+            taskId: task.id,
+            completed: allSubComplete,
+            completedAt: allSubComplete ? new Date().toISOString() : undefined,
+            completedSubtaskIds: updatedSubtaskIds
+          };
+          await saveCompletion(completion);
         } else {
           // Toggle overall classmates completion tracker for this synced task
-          const nextVal = !task.completed;
-          const updatedSub = nextVal ? task.subtasks?.map(s => ({ ...s, completed: true })) : task.subtasks;
+          const nextVal = !wasCompleted;
+          const allSubtaskIds = task.subtasks?.map(s => s.id) || [];
+          const updatedSubtaskIds = nextVal ? allSubtaskIds : [];
+          
           const completion: SyncedTaskCompletion = {
             id: `${activeProfileId}-${task.id}`,
             classmateId: activeProfileId,
             taskId: task.id,
             completed: nextVal,
-            completedAt: nextVal ? new Date().toISOString() : undefined
+            completedAt: nextVal ? new Date().toISOString() : undefined,
+            completedSubtaskIds: updatedSubtaskIds
           };
           await saveCompletion(completion);
-          await updateTask(task.id, { 
-            subtasks: updatedSub, 
-            completed: nextVal, 
-            completedAt: nextVal ? new Date().toISOString() : null,
-            isArchived: false, 
-            status: nextVal ? 'completed' : 'todo' 
-          });
         }
       } else {
         // Local personal task
@@ -3094,7 +3132,7 @@ export default function App() {
       }
       
       // Update submission streak on master task completion transition
-      if (!task.completed && !isSubtaskCall && activeProfileId) {
+      if (!wasCompleted && !isSubtaskCall && activeProfileId) {
         await checkAndUpdateSubmissionStreak();
         try {
           const today = getTodayString();
@@ -3174,6 +3212,18 @@ export default function App() {
   };
 
   const getTaskStatus = (task: Task): 'todo' | 'in_progress' | 'completed' => {
+    if (task.isSynced && activeProfileId) {
+      const comp = completions.find(c => c.classmateId === activeProfileId && c.taskId === task.id);
+      const isComp = comp ? comp.completed : false;
+      if (isComp) return 'completed';
+      
+      const completedSubtaskIds = comp?.completedSubtaskIds || [];
+      const subCount = task.subtasks?.length || 0;
+      const subCompCount = task.subtasks?.filter(s => completedSubtaskIds.includes(s.id)).length || 0;
+      if (subCount > 0 && subCompCount > 0) return 'in_progress';
+      return 'todo';
+    }
+
     if (task.completed) return 'completed';
     if (task.status) return task.status;
     const subCount = task.subtasks?.length || 0;
@@ -3185,6 +3235,7 @@ export default function App() {
   const handleUpdateTaskStatus = async (task: Task, nextStatus: 'todo' | 'in_progress' | 'completed') => {
     if (!activeProfileId) return;
     try {
+      const comp = completions.find(c => c.classmateId === activeProfileId && c.taskId === task.id);
       if (nextStatus === 'completed') {
         // Complete the task
         if (task.isSynced) {
@@ -3193,17 +3244,10 @@ export default function App() {
             classmateId: activeProfileId,
             taskId: task.id,
             completed: true,
-            completedAt: new Date().toISOString()
+            completedAt: new Date().toISOString(),
+            completedSubtaskIds: task.subtasks?.map(s => s.id) || []
           };
           await saveCompletion(completion);
-          const updatedSub = task.subtasks?.map(s => ({ ...s, completed: true })) || [];
-          await updateTask(task.id, { 
-            subtasks: updatedSub, 
-            completed: true,
-            completedAt: new Date().toISOString(),
-            isArchived: false, 
-            status: 'completed' 
-          });
         } else {
           const updatedSub = task.subtasks?.map(s => ({ ...s, completed: true })) || [];
           await updateTask(task.id, { 
@@ -3216,7 +3260,11 @@ export default function App() {
         }
         
         // Update submission streak on master task completion transition
-        if (!task.completed) {
+        const wasCompleted = task.isSynced 
+          ? (comp ? comp.completed : false)
+          : task.completed;
+
+        if (!wasCompleted) {
           await checkAndUpdateSubmissionStreak();
           try {
             const today = getTodayString();
@@ -3243,18 +3291,15 @@ export default function App() {
       } else {
         // Moving back to todo or in_progress
         if (task.isSynced) {
-          const wasCompleted = getTaskStatus(task) === 'completed';
-          if (wasCompleted) {
-            const completion: SyncedTaskCompletion = {
-              id: `${activeProfileId}-${task.id}`,
-              classmateId: activeProfileId,
-              taskId: task.id,
-              completed: false,
-              completedAt: undefined
-            };
-            await saveCompletion(completion);
-          }
-          await updateTask(task.id, { isArchived: false, completedAt: null, completed: false, status: nextStatus });
+          const completion: SyncedTaskCompletion = {
+            id: `${activeProfileId}-${task.id}`,
+            classmateId: activeProfileId,
+            taskId: task.id,
+            completed: false,
+            completedAt: undefined,
+            completedSubtaskIds: nextStatus === 'todo' ? [] : (comp?.completedSubtaskIds || [])
+          };
+          await saveCompletion(completion);
         } else {
           await updateTask(task.id, { completed: false, completedAt: null, isArchived: false, status: nextStatus });
         }
@@ -3307,9 +3352,29 @@ export default function App() {
     list = list.map(t => {
       if (t.isSynced) {
         const comp = completions.find(c => c.classmateId === activeProfileId && c.taskId === t.id);
+        const isComp = comp ? comp.completed : false;
+        const completedSubtaskIds = comp?.completedSubtaskIds || [];
+        const decoratedSubtasks = t.subtasks?.map(s => ({
+          ...s,
+          completed: isComp ? true : completedSubtaskIds.includes(s.id)
+        })) || [];
+        
+        // Calculate status dynamically based on decorated subtasks or overall completion
+        const subCount = decoratedSubtasks.length;
+        const subCompCount = decoratedSubtasks.filter(s => s.completed).length;
+        let status: 'todo' | 'in_progress' | 'completed' = 'todo';
+        if (isComp) {
+          status = 'completed';
+        } else if (subCount > 0 && subCompCount > 0) {
+          status = 'in_progress';
+        }
+
         return {
           ...t,
-          completed: comp ? comp.completed : false
+          completed: isComp,
+          completedAt: isComp ? (comp?.completedAt || null) : null,
+          subtasks: decoratedSubtasks,
+          status: status
         };
       }
       return t;
@@ -4130,6 +4195,13 @@ export default function App() {
                   return (
                     <button
                       key={item.id}
+                      id={
+                        item.id === 'tasks' ? 'switcher-feed-trigger-desktop' :
+                        item.id === 'create' ? 'switcher-create-trigger-desktop' :
+                        item.id === 'classroom' ? 'switcher-classroom-trigger-desktop' :
+                        item.id === 'focus' ? 'switcher-focus-trigger-desktop' :
+                        undefined
+                      }
                       onClick={() => setActiveTab(item.id as any)}
                       className={`w-full flex items-center gap-2.5 p-2.5 rounded-xl text-xs font-bold transition-all text-left cursor-pointer ${
                         isActive 
@@ -4441,9 +4513,32 @@ export default function App() {
               </div>
             </div>
 
-            {/* Right section: Context Selector and User Avatar */}
+            {/* Right section: Context Selector, Theme Icon, and User Avatar */}
             <div className="flex items-center gap-2">
               
+              {/* THEME & COLOR CUSTOMIZER QUICK TRIGGER */}
+              {activeProfile && (
+                <button
+                  id="switcher-theme-trigger"
+                  onClick={() => {
+                    setActiveTab('settings');
+                    setGuideStep(null); // Close active guide walkthrough when clicked
+                  }}
+                  className={`w-8 h-8 rounded-xl border flex items-center justify-center transition-all cursor-pointer shadow-3xs relative ${
+                    activeTab === 'settings' 
+                      ? 'border-indigo-200 bg-indigo-50/50 text-indigo-650' 
+                      : 'border-slate-200 hover:border-indigo-400 hover:bg-slate-50 text-slate-700'
+                  }`}
+                  title="Customize Theme Colors"
+                >
+                  <Palette className="w-4 h-4 text-indigo-600 animate-pulse" />
+                  <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                  </span>
+                </button>
+              )}
+
               {/* GROUP SELECTOR WORKSPACE (Middle Area) */}
               {activeProfile && (
                 <div className="relative">
@@ -4594,13 +4689,15 @@ export default function App() {
                         <span>Sign In with Google</span>
                       </button>
 
-                      <div className="text-center pt-2">
+                      <div className="text-center pt-3 mt-4 border-t border-slate-100">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">No account yet?</p>
                         <button
                           type="button"
                           onClick={() => { setAuthMode('signup'); setFormError(null); setFormSuccess(null); }}
-                          className="text-xs font-semibold text-slate-500 hover:text-indigo-650 cursor-pointer"
+                          className="w-full bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 font-black py-2.5 rounded-xl text-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-3xs"
                         >
-                          New here? <span className="text-indigo-600 font-extrabold underline">Create student account</span>
+                          <UserPlus className="w-3.5 h-3.5 text-emerald-600 animate-pulse" />
+                          <span>Create Student Account / Register</span>
                         </button>
                       </div>
                     </form>
@@ -8644,6 +8741,7 @@ export default function App() {
         {/* 📱 COZY TOUCH BOTTOM SHIFT NAVIGATION BAR CONTROLS */}
         <div className="absolute bottom-0 left-0 right-0 h-16 bg-white border-t border-slate-200/90 flex items-center justify-around px-4 z-40 select-none lg:hidden">
           <button
+            id="switcher-feed-trigger"
             onClick={() => { if (activeGroupId) setActiveTab('tasks'); }}
             disabled={!activeGroupId}
             className={`flex flex-col items-center justify-center gap-1 transition-all flex-1 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed`}
@@ -8653,6 +8751,7 @@ export default function App() {
           </button>
 
           <button
+            id="switcher-create-trigger"
             onClick={() => { if (activeGroupId) setActiveTab('create'); }}
             disabled={!activeGroupId}
             className={`flex flex-col items-center justify-center gap-1 transition-all flex-1 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed`}
@@ -8662,6 +8761,7 @@ export default function App() {
           </button>
 
           <button
+            id="switcher-classroom-trigger"
             onClick={() => { if (activeGroupId) setActiveTab('classroom'); }}
             disabled={!activeGroupId}
             className={`flex flex-col items-center justify-center gap-1 transition-all flex-1 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed`}
@@ -8671,6 +8771,7 @@ export default function App() {
           </button>
 
           <button
+            id="switcher-focus-trigger"
             onClick={() => { if (activeProfile) setActiveTab('focus'); }}
             disabled={!activeProfile}
             className={`flex flex-col items-center justify-center gap-1 transition-all flex-1 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed`}
@@ -9428,6 +9529,79 @@ export default function App() {
                       </div>
                     )}
 
+                     {/* Classmate Completions Dashboard for Coordinators */}
+                    {latestActiveTask.isSynced && (activeUserIsLeader || latestActiveTask.createdById === activeProfileId) && (
+                      <div className="border border-emerald-100 p-4 rounded-2xl bg-emerald-50/10 text-left space-y-3">
+                        <div className="flex items-center justify-between border-b border-emerald-100/50 pb-2.5">
+                          <span className="text-[10px] uppercase tracking-wider font-extrabold text-emerald-800 font-mono flex items-center gap-1.5">
+                            <Users className="w-3.5 h-3.5 text-emerald-600" />
+                            Classmate Completion Tracker
+                          </span>
+                          <span className="bg-emerald-100 text-emerald-800 text-[9px] font-bold px-2 py-0.5 rounded-full font-mono">
+                            {(() => {
+                              const totalClassmates = groupMembersList.filter(m => m.role === 'classmate').length;
+                              const completedClassmates = groupMembersList.filter(m => {
+                                if (m.role !== 'classmate') return false;
+                                const comp = completions.find(c => c.classmateId === m.userId && c.taskId === latestActiveTask.id);
+                                return comp?.completed;
+                              }).length;
+                              return `${completedClassmates} / ${totalClassmates} Done`;
+                            })()}
+                          </span>
+                        </div>
+
+                        <div className="space-y-2 max-h-56 overflow-y-auto pr-0.5">
+                          {groupMembersList.filter(m => m.role === 'classmate').length === 0 ? (
+                            <p className="text-[10px] text-slate-400 italic py-2">No classmates enrolled in this group yet.</p>
+                          ) : (
+                            groupMembersList
+                              .filter(m => m.role === 'classmate')
+                              .map(member => {
+                                const memberComp = completions.find(c => c.classmateId === member.userId && c.taskId === latestActiveTask.id);
+                                const isComp = memberComp ? memberComp.completed : false;
+                                const completedSubtaskIds = memberComp?.completedSubtaskIds || [];
+                                
+                                const totalSubs = latestActiveTask.subtasks?.length || 0;
+                                const compSubs = latestActiveTask.subtasks?.filter(s => completedSubtaskIds.includes(s.id)).length || 0;
+                                
+                                return (
+                                  <div key={member.userId} className="flex items-center justify-between bg-white p-2.5 border border-slate-150 rounded-xl hover:border-slate-300 transition-all shadow-3xs gap-2">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                      <img src={member.avatar} alt="Student avatar" className="w-6 h-6 rounded-full object-cover border shrink-0" referrerPolicy="no-referrer" />
+                                      <div className="min-w-0">
+                                        <span className="text-[10.5px] font-black text-slate-850 truncate block">{member.name}</span>
+                                        {totalSubs > 0 && (
+                                          <span className="text-[8.5px] text-slate-400 block font-mono">
+                                            Milestones: {compSubs} / {totalSubs}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                    
+                                    <div className="shrink-0 flex items-center gap-1.5">
+                                      {isComp ? (
+                                        <span className="bg-emerald-50 border border-emerald-150 text-emerald-700 px-2.5 py-0.5 rounded-lg text-[9px] font-bold flex items-center gap-1">
+                                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                          Completed
+                                        </span>
+                                      ) : compSubs > 0 ? (
+                                        <span className="bg-amber-50 border border-amber-150 text-amber-700 px-2.5 py-0.5 rounded-lg text-[9px] font-bold">
+                                          In Progress
+                                        </span>
+                                      ) : (
+                                        <span className="bg-slate-50 border border-slate-150 text-slate-400 px-2.5 py-0.5 rounded-lg text-[9px] font-medium">
+                                          Not Started
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })
+                          )}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Comments / Discussions feed */}
                     <div className="space-y-3">
                       <h4 className="text-[10px] uppercase tracking-wider font-extrabold text-slate-450 font-sans flex items-center gap-1.5 border-b pb-2 text-left font-mono">
@@ -9944,7 +10118,37 @@ export default function App() {
           activeTab={activeTab as any}
           setActiveTab={setActiveTab as any}
           activeGroupId={activeGroupId}
+          onStartInteractiveTour={() => {
+            setShowTutorial(false);
+            localStorage.setItem('tasktrack_tutorial_completed', 'true');
+            setGuideStep(0);
+          }}
         />
+
+        {/* --- INTERACTIVE ONBOARDING POINTER GUIDE --- */}
+        {guideStep !== null && (
+          <InteractiveGuide
+            step={guideStep}
+            totalSteps={7}
+            onNext={() => {
+              if (guideStep < 6) {
+                setGuideStep(guideStep + 1);
+              } else {
+                setGuideStep(null);
+                localStorage.setItem('tasktrack_interactive_guide_completed', 'true');
+              }
+            }}
+            onPrev={() => {
+              if (guideStep > 0) {
+                setGuideStep(guideStep - 1);
+              }
+            }}
+            onClose={() => {
+              setGuideStep(null);
+              localStorage.setItem('tasktrack_interactive_guide_completed', 'true');
+            }}
+          />
+        )}
 
         {/* --- CLASS ANALYTICS CONSOLE OVERLAY --- */}
         {activeTab === 'admin' && canAccessClassAnalytics && (
@@ -10039,6 +10243,298 @@ export default function App() {
           </AnimatePresence>
         </div>
 
+      </div>
+    </div>
+  );
+}
+
+function InteractiveGuide({ 
+  step, 
+  onNext, 
+  onPrev, 
+  onClose,
+  totalSteps = 7
+}: { 
+  step: number; 
+  onNext: () => void; 
+  onPrev: () => void; 
+  onClose: () => void;
+  totalSteps?: number;
+}) {
+  const [coords, setCoords] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
+
+  const stepsData = [
+    {
+      title: 'Select Active Class',
+      desc: 'Tap here to switch classroom cohorts! Enroll with class codes to sync schedules, announcements, workloads, and chat.',
+      fallbackDesc: 'Tap here to switch classroom cohorts! Enroll with class codes to sync schedules, announcements, workloads, and chat.',
+      icon: <University className="w-4 h-4 text-indigo-400" />,
+      targetIdDesktop: 'switcher-group-trigger',
+      targetIdMobile: 'switcher-group-trigger',
+      placement: 'bottom' as const,
+    },
+    {
+      title: 'Workloads & Checklists',
+      desc: 'Access study planners. Track assignments, exams, or subtasks. Checking them off updates your class progress bar.',
+      fallbackDesc: 'Unlock your workloads panel once enrolled in a class! Here you will track assignments, study materials, and custom student checklists.',
+      icon: <CheckSquare className="w-4 h-4 text-emerald-400" />,
+      targetIdDesktop: 'switcher-feed-trigger-desktop',
+      targetIdMobile: 'switcher-feed-trigger',
+      placement: 'right' as const,
+    },
+    {
+      title: 'Assemble & Publish',
+      desc: 'Create and publish tasks, assignments, announcements, and links to your classmates in real time.',
+      fallbackDesc: 'Publish tasks, assignments, homework, and classroom notices! Once in a class, you can compose and sync records instantly.',
+      icon: <Plus className="w-4 h-4 text-amber-400" />,
+      targetIdDesktop: 'switcher-create-trigger-desktop',
+      targetIdMobile: 'switcher-create-trigger',
+      placement: 'right' as const,
+    },
+    {
+      title: 'Class Hub & Announcements',
+      desc: 'Access cohort-wide announcements, inspect registered student members, copy your class invite code, and chat in real-time.',
+      fallbackDesc: 'Interact with other classmates! Once enrolled, the Class Hub hosts shared noticeboards, member rosters, and active cohort group chat.',
+      icon: <Users className="w-4 h-4 text-sky-400" />,
+      targetIdDesktop: 'switcher-classroom-trigger-desktop',
+      targetIdMobile: 'switcher-classroom-trigger',
+      placement: 'right' as const,
+    },
+    {
+      title: 'Focus Pomodoro Sprints',
+      desc: 'Boot up solo or multiplayer study timers! Pick focus durations, play relaxing ambient sounds, and level up your study XP.',
+      fallbackDesc: 'Concentrate on your studies! Focus Sprints provide custom Pomodoro timers with rich sound choices and XP multipliers.',
+      icon: <Flame className="w-4 h-4 text-rose-400" />,
+      targetIdDesktop: 'switcher-focus-trigger-desktop',
+      targetIdMobile: 'switcher-focus-trigger',
+      placement: 'right' as const,
+    },
+    {
+      title: 'Theme & Accent Colors',
+      desc: 'Customize your layout! Access the palette to customize accent colors, toggle dark/contrast card modes, and pick background themes.',
+      fallbackDesc: 'Customize your layout! Access the palette to customize accent colors, toggle dark/contrast card modes, and pick background themes.',
+      icon: <Palette className="w-4 h-4 text-purple-400" />,
+      targetIdDesktop: 'switcher-theme-trigger',
+      targetIdMobile: 'switcher-theme-trigger',
+      placement: 'bottom' as const,
+    },
+    {
+      title: 'Student Identity & XP Profile',
+      desc: 'Check your student persona card. View your current active level, review accumulated study streak days, or securely sign out.',
+      fallbackDesc: 'Check your student persona card. View your current active level, review accumulated study streak days, or securely sign out.',
+      icon: <User className="w-4 h-4 text-pink-400" />,
+      targetIdDesktop: 'switcher-identity-trigger',
+      targetIdMobile: 'switcher-identity-trigger',
+      placement: 'bottom' as const,
+    }
+  ];
+
+  const currentStepData = stepsData[step] || stepsData[0];
+
+  useEffect(() => {
+    const updatePosition = () => {
+      const isDesktop = window.innerWidth >= 1024;
+      const targetId = isDesktop ? currentStepData.targetIdDesktop : currentStepData.targetIdMobile;
+      const el = document.getElementById(targetId);
+      
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        // Skip updating if coordinates are unchanged
+        setCoords(prev => {
+          if (prev && prev.top === rect.top && prev.left === rect.left && prev.width === rect.width && prev.height === rect.height) {
+            return prev;
+          }
+          return {
+            top: rect.top,
+            left: rect.left,
+            width: rect.width,
+            height: rect.height
+          };
+        });
+      } else {
+        setCoords(null);
+      }
+    };
+
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition, true);
+    const interval = setInterval(updatePosition, 300);
+
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition, true);
+      clearInterval(interval);
+    };
+  }, [step, currentStepData]);
+
+  const isDesktop = window.innerWidth >= 1024;
+  const tooltipWidth = 320;
+  const tooltipHeight = 175;
+  const gap = 14;
+
+  let placement = currentStepData.placement;
+  if (!isDesktop && (placement === 'right' || placement === 'left')) {
+    placement = 'top';
+  }
+
+  const tooltipStyle: React.CSSProperties = {
+    position: 'fixed',
+    zIndex: 1000,
+  };
+  const arrowStyle: React.CSSProperties = {};
+
+  if (coords) {
+    if (placement === 'bottom') {
+      tooltipStyle.top = coords.top + coords.height + gap;
+      tooltipStyle.left = Math.max(12, Math.min(window.innerWidth - tooltipWidth - 12, coords.left + coords.width / 2 - tooltipWidth / 2));
+      arrowStyle.top = -5;
+      arrowStyle.left = Math.max(12, Math.min(tooltipWidth - 24, coords.left + coords.width / 2 - (tooltipStyle.left as number) - 5));
+    } else if (placement === 'top') {
+      tooltipStyle.top = Math.max(12, coords.top - tooltipHeight - gap);
+      tooltipStyle.left = Math.max(12, Math.min(window.innerWidth - tooltipWidth - 12, coords.left + coords.width / 2 - tooltipWidth / 2));
+      arrowStyle.bottom = -5;
+      arrowStyle.left = Math.max(12, Math.min(tooltipWidth - 24, coords.left + coords.width / 2 - (tooltipStyle.left as number) - 5));
+    } else if (placement === 'right') {
+      tooltipStyle.top = Math.max(12, Math.min(window.innerHeight - tooltipHeight - 12, coords.top + coords.height / 2 - tooltipHeight / 2));
+      tooltipStyle.left = coords.left + coords.width + gap;
+      arrowStyle.left = -5;
+      arrowStyle.top = Math.max(12, Math.min(tooltipHeight - 24, coords.top + coords.height / 2 - (tooltipStyle.top as number) - 5));
+    } else if (placement === 'left') {
+      tooltipStyle.top = Math.max(12, Math.min(window.innerHeight - tooltipHeight - 12, coords.top + coords.height / 2 - tooltipHeight / 2));
+      tooltipStyle.left = coords.left - tooltipWidth - gap;
+      arrowStyle.right = -5;
+      arrowStyle.top = Math.max(12, Math.min(tooltipHeight - 24, coords.top + coords.height / 2 - (tooltipStyle.top as number) - 5));
+    }
+  } else {
+    // Elegant viewport center screen fallback
+    tooltipStyle.top = '50%';
+    tooltipStyle.left = '50%';
+    tooltipStyle.transform = 'translate(-50%, -50%)';
+  }
+
+  let arrowClassName = "absolute w-2.5 h-2.5 bg-slate-900 pointer-events-none transform rotate-45";
+  if (placement === 'bottom') {
+    arrowClassName += " border-l border-t border-slate-800/90";
+  } else if (placement === 'top') {
+    arrowClassName += " border-r border-b border-slate-800/90";
+  } else if (placement === 'right') {
+    arrowClassName += " border-l border-b border-slate-800/90";
+  } else if (placement === 'left') {
+    arrowClassName += " border-r border-t border-slate-800/90";
+  }
+
+  return (
+    <div className="fixed inset-0 z-[999] pointer-events-none font-sans select-none">
+      {/* Dark semi-transparent background overlay */}
+      <div 
+        className="fixed inset-0 bg-slate-950/45 pointer-events-auto cursor-pointer"
+        onClick={onClose}
+      />
+
+      {/* Pulsing Highlight Target Frame */}
+      {coords && (
+        <div 
+          className="fixed border-2 border-indigo-500 rounded-2xl shadow-[0_0_0_9999px_rgba(2,6,23,0.45)] transition-all duration-300 pointer-events-none"
+          style={{
+            top: coords.top - 6,
+            left: coords.left - 6,
+            width: coords.width + 12,
+            height: coords.height + 12
+          }}
+        >
+          {/* Inner pulse ring */}
+          <div className="absolute -inset-1 border border-indigo-400 rounded-2xl animate-pulse opacity-70" />
+        </div>
+      )}
+
+      {/* Guide Tooltip Card */}
+      <div 
+        className="fixed bg-slate-900 border border-slate-800/90 p-4.5 rounded-2xl w-[320px] text-white shadow-2xl pointer-events-auto transition-all duration-300 select-text"
+        style={tooltipStyle}
+      >
+        {coords && (
+          <div 
+            className={arrowClassName}
+            style={arrowStyle}
+          />
+        )}
+
+        <div className="space-y-3">
+          <div className="flex items-center justify-between border-b border-slate-850 pb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-[9px] font-mono text-indigo-400 font-extrabold uppercase tracking-widest">
+                Guide &bull; Step {step + 1} of {totalSteps}
+              </span>
+              {!coords && (
+                <span className="text-[8px] bg-amber-500/10 border border-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded font-mono font-bold tracking-wider uppercase">
+                  View Only
+                </span>
+              )}
+            </div>
+            
+            <button 
+              onClick={onClose}
+              className="text-slate-400 hover:text-white transition-colors cursor-pointer p-0.5 hover:bg-slate-800 rounded"
+              title="Close Guide"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <div className="text-left space-y-1.5">
+            <h4 className="font-black text-xs text-white flex items-center gap-2">
+              <span className="flex items-center justify-center w-6 h-6 rounded-lg bg-slate-800 border border-slate-700/60 shadow-3xs shrink-0">
+                {currentStepData.icon}
+              </span> 
+              <span>{currentStepData.title}</span>
+            </h4>
+            <p className="text-[10.5px] text-slate-300 leading-relaxed font-medium">
+              {coords ? currentStepData.desc : currentStepData.fallbackDesc}
+            </p>
+          </div>
+
+          {/* SaaS Dots and Navigation Controls */}
+          <div className="flex items-center justify-between pt-2.5 border-t border-slate-850">
+            {/* Dots bar */}
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalSteps }).map((_, idx) => (
+                <div 
+                  key={idx}
+                  className={`h-1 rounded-full transition-all duration-300 ${
+                    idx === step 
+                      ? 'w-3.5 bg-indigo-500' 
+                      : idx < step 
+                        ? 'w-1.5 bg-emerald-500' 
+                        : 'w-1 bg-slate-800'
+                  }`}
+                />
+              ))}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={onPrev}
+                disabled={step === 0}
+                className={`text-[9.5px] font-black tracking-wider uppercase transition-all px-2.5 py-1.5 rounded-lg ${
+                  step === 0 
+                    ? 'text-slate-600 cursor-not-allowed opacity-40' 
+                    : 'text-slate-400 hover:text-white hover:bg-slate-850'
+                }`}
+              >
+                Back
+              </button>
+
+              <button
+                onClick={onNext}
+                className="bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-black text-[9.5px] tracking-wider uppercase px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all shadow-md active:scale-98"
+              >
+                <span>{step === totalSteps - 1 ? 'Finish' : 'Next'}</span>
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

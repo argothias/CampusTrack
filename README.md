@@ -1,4 +1,4 @@
-# CampusTrack
+# CampusTrack 🎓✨
 
 CampusTrack is a highly polished, secure, and collaborative academic planner designed for students and study groups. It blends private personal task management with cloud-synchronized group tasks, real-time announcements, deep focus tracking, and a peer study point leaderboard.
 
@@ -6,10 +6,10 @@ CampusTrack features a robust, **real-time, offline-first sync engine** using Fi
 
 ---
 
-## Key Features & Capabilities
+## 🚀 Key Features & Capabilities
 
 ### 1. Unified Task & Assignment Engine
-* **Private vs. Shared Sync Tasks**: Manage personal private tasks alongside shared group assignments assigned by group Coordinators.
+* **Private vs. Shared Sync Tasks**: Manage personal private tasks alongside shared group assignments assigned by group Coordinators. Task completions and individual subtask milestone checkboxes for synced tasks are tracked individually per student, meaning only you see your completions, while the coordinator can see exactly who completed each item.
 * **Smart Categorization & Visual Tags**: Organize your workload with high-contrast customizable category labels, priority badges, and subject markers.
 * **Subtasks & Milestone Checklists**: Break large assignments down into manageable checkpoints with nested progress tracking.
 * **Rich Interactions**: Post task comments, upload links/attachments, track due dates, and mark progress.
@@ -37,12 +37,12 @@ CampusTrack features a robust, **real-time, offline-first sync engine** using Fi
 * **Custom Retention Intervals**: Configure deletion parameters to purge completed assignments immediately or after set retention intervals (e.g., 1, 3, 5, or 7 days).
 
 ### 6. Leaderboards & Study Points Metrics
-* **Gamified Motivation**: Students earn visual experience points (â­ pts) automatically upon completing shared group assignments.
+* **Gamified Motivation**: Students earn visual experience points (⭐ pts) automatically upon completing shared group assignments.
 * **Study Cohort Leaderboard**: Compare academic progress with group members in real-time, encouraging friendly study motivation.
 
 ---
 
-## Built With
+## 🛠️ Built With
 
 * **Frontend Framework**: [React 18](https://react.dev/) + [Vite](https://vite.dev/) (Client-Side SPA Architecture)
 * **Programming Language**: [TypeScript](https://www.typescriptlang.org/) (Strict type-safe interfaces)
@@ -53,7 +53,40 @@ CampusTrack features a robust, **real-time, offline-first sync engine** using Fi
 
 ---
 
-## Security & Rules
+## 📦 Local Installation & Setup
+
+1. **Clone the Repository**:
+   ```bash
+   git clone <your-repository-url>
+   cd <your-repository-folder>
+   ```
+
+2. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Configure Environment Variables**:
+   Create a `.env` file in the root directory and add your Firebase credentials:
+   ```env
+   # .env
+   # Setup your standard Firestore environment variables here
+   ```
+
+4. **Run Dev Server**:
+   ```bash
+   npm run dev
+   ```
+   Open `http://localhost:3000` in your browser.
+
+5. **Build for Production**:
+   ```bash
+   npm run build
+   ```
+
+---
+
+## 🔒 Security & Rules
 
 CampusTrack is backed by comprehensive **Firestore Security Rules** ensuring strict access controls:
 * Users can only read and write their own student profile information.
