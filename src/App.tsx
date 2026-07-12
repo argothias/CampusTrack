@@ -986,6 +986,7 @@ export default function App() {
   const [showGlobalCongratulation, setShowGlobalCongratulation] = useState(false);
   const [showProgressDetails, setShowProgressDetails] = useState(false);
   const prevPercentRef = useRef<number | null>(null);
+  const hasJustInteractedRef = useRef<boolean>(false);
 
   // Dynamic Theme Definitions and mapping
   const theme = useMemo(() => {
@@ -3055,6 +3056,7 @@ export default function App() {
   // Toggle checklist, subtasks, or master completion stats
   const toggleTaskCompleteness = async (task: Task, isSubtaskCall = false, subtaskId?: string, subtaskPrevVal?: boolean) => {
     if (!activeProfileId) return;
+    hasJustInteractedRef.current = true;
     try {
       const comp = completions.find(c => c.classmateId === activeProfileId && c.taskId === task.id);
       const wasCompleted = task.isSynced 
@@ -3082,7 +3084,8 @@ export default function App() {
             taskId: task.id,
             completed: allSubComplete,
             completedAt: allSubComplete ? new Date().toISOString() : undefined,
-            completedSubtaskIds: updatedSubtaskIds
+            completedSubtaskIds: updatedSubtaskIds,
+            status: allSubComplete ? 'completed' : (updatedSubtaskIds.length > 0 ? 'in_progress' : 'todo')
           };
           await saveCompletion(completion);
         } else {
@@ -3097,7 +3100,8 @@ export default function App() {
             taskId: task.id,
             completed: nextVal,
             completedAt: nextVal ? new Date().toISOString() : undefined,
-            completedSubtaskIds: updatedSubtaskIds
+            completedSubtaskIds: updatedSubtaskIds,
+            status: nextVal ? 'completed' : 'todo'
           };
           await saveCompletion(completion);
         }
@@ -3167,7 +3171,7 @@ export default function App() {
   // Interactive Delete event
   const handleDeleteTask = async (task: Task) => {
     if (!confirm(`Are you sure you want to delete "${task.title}"?`)) return;
-
+    hasJustInteractedRef.current = true;
     try {
       await deleteTask(task.id);
     } catch (err) {
@@ -3217,6 +3221,10 @@ export default function App() {
       const isComp = comp ? comp.completed : false;
       if (isComp) return 'completed';
       
+      if (comp && comp.status) {
+        return comp.status;
+      }
+      
       const completedSubtaskIds = comp?.completedSubtaskIds || [];
       const subCount = task.subtasks?.length || 0;
       const subCompCount = task.subtasks?.filter(s => completedSubtaskIds.includes(s.id)).length || 0;
@@ -3234,6 +3242,7 @@ export default function App() {
 
   const handleUpdateTaskStatus = async (task: Task, nextStatus: 'todo' | 'in_progress' | 'completed') => {
     if (!activeProfileId) return;
+    hasJustInteractedRef.current = true;
     try {
       const comp = completions.find(c => c.classmateId === activeProfileId && c.taskId === task.id);
       if (nextStatus === 'completed') {
@@ -3245,7 +3254,8 @@ export default function App() {
             taskId: task.id,
             completed: true,
             completedAt: new Date().toISOString(),
-            completedSubtaskIds: task.subtasks?.map(s => s.id) || []
+            completedSubtaskIds: task.subtasks?.map(s => s.id) || [],
+            status: 'completed'
           };
           await saveCompletion(completion);
         } else {
@@ -3297,7 +3307,8 @@ export default function App() {
             taskId: task.id,
             completed: false,
             completedAt: undefined,
-            completedSubtaskIds: nextStatus === 'todo' ? [] : (comp?.completedSubtaskIds || [])
+            completedSubtaskIds: nextStatus === 'todo' ? [] : (comp?.completedSubtaskIds || []),
+            status: nextStatus
           };
           await saveCompletion(completion);
         } else {
@@ -3365,6 +3376,8 @@ export default function App() {
         let status: 'todo' | 'in_progress' | 'completed' = 'todo';
         if (isComp) {
           status = 'completed';
+        } else if (comp && comp.status) {
+          status = comp.status;
         } else if (subCount > 0 && subCompCount > 0) {
           status = 'in_progress';
         }
@@ -3491,7 +3504,10 @@ export default function App() {
   useEffect(() => {
     if (activeGroupProgressMetrics.total > 0) {
       if (prevPercentRef.current !== null && prevPercentRef.current < 100 && activeGroupProgressMetrics.percent === 100) {
-        setShowGlobalCongratulation(true);
+        if (hasJustInteractedRef.current) {
+          setShowGlobalCongratulation(true);
+          hasJustInteractedRef.current = false;
+        }
       }
       prevPercentRef.current = activeGroupProgressMetrics.percent;
     } else {
@@ -10118,6 +10134,9 @@ export default function App() {
           activeTab={activeTab as any}
           setActiveTab={setActiveTab as any}
           activeGroupId={activeGroupId}
+          activeProfileId={activeProfileId}
+          setActiveGroupId={setActiveGroupId}
+          groups={groups}
           onStartInteractiveTour={() => {
             setShowTutorial(false);
             localStorage.setItem('tasktrack_tutorial_completed', 'true');

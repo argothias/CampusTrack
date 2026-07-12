@@ -11,7 +11,7 @@ import {
   Flame, Trophy, Award, Calendar, Check,
   Smartphone, Sparkles, AlertCircle,
   CheckCircle2, Compass, X, Palette, Zap, Star, Search,
-  Lock, Settings
+  Lock, Settings, Clock, BookOpen, Coffee
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -32,6 +32,11 @@ const BadgeVisualIcon = ({ emoji, className = "w-5 h-5", unlocked = true }: { em
     case '🎒': return <Trophy className={`${className} text-indigo-500`} />;
     case '🛠️': return <Settings className={`${className} text-sky-500`} />;
     case '🎨': return <Palette className={`${className} text-violet-500`} />;
+    case '⏰': return <Clock className={`${className} text-cyan-500`} />;
+    case '📚': return <BookOpen className={`${className} text-emerald-500`} />;
+    case '☕': return <Coffee className={`${className} text-amber-600`} />;
+    case '🏆': return <Trophy className={`${className} text-yellow-500`} />;
+    case '✔️': return <CheckCircle2 className={`${className} text-emerald-500`} />;
     default: return <Award className={`${className} text-indigo-500`} />;
   }
 };
@@ -178,6 +183,62 @@ const BADGES_INFO: BadgeInfo[] = [
     progressPercent: (ctx: any) => ctx.isCustomTheme ? 100 : 0,
     lore: "Esthetics enthusiast! You have sculpted your learning environment to perfectly reflect your cognitive headspace.",
     tabRedirect: 'settings' as const
+  },
+  {
+    id: 'consistency_champion',
+    title: 'Consistency Champion',
+    emoji: '🔥',
+    description: 'Maintain an advanced 5-day daily login streak.',
+    badgeClass: 'bg-amber-50 border-amber-200 text-amber-600',
+    color: 'from-amber-50 to-orange-50',
+    pointsAward: 150,
+    checkUnlock: (ctx: any) => ctx.dailyLoginStreak >= 5,
+    progress: (ctx: any) => `Streak: ${ctx.dailyLoginStreak}/5 days`,
+    progressPercent: (ctx: any) => Math.min((ctx.dailyLoginStreak / 5) * 100, 100),
+    lore: "Five consecutive days of logging in! Your consistency is a shining example for your entire workspace cohort.",
+    tabRedirect: 'streaks' as const
+  },
+  {
+    id: 'workload_titan',
+    title: 'Workload Titan',
+    emoji: '📚',
+    description: 'Complete 20 tasks successfully.',
+    badgeClass: 'bg-emerald-50 border-emerald-200 text-emerald-600',
+    color: 'from-emerald-50 to-teal-50',
+    pointsAward: 200,
+    checkUnlock: (ctx: any) => ctx.completedCount >= 20,
+    progress: (ctx: any) => `${Math.min(ctx.completedCount, 20)}/20 completed`,
+    progressPercent: (ctx: any) => Math.min((ctx.completedCount / 20) * 100, 100),
+    lore: "Twenty tasks conquered! You have crossed the threshold from an active student to an absolute workload titan.",
+    tabRedirect: 'tasks' as const
+  },
+  {
+    id: 'zen_master',
+    title: 'Zen Master',
+    emoji: '🧘',
+    description: 'Maintain a 5-day focus sprint streak or study sessions.',
+    badgeClass: 'bg-rose-50 border-rose-200 text-rose-600',
+    color: 'from-rose-50 to-red-50',
+    pointsAward: 180,
+    checkUnlock: (ctx: any) => (ctx.studyStreak || 0) >= 5,
+    progress: (ctx: any) => `Sprints: ${Math.min(ctx.studyStreak || 0, 5)}/5 sessions`,
+    progressPercent: (ctx: any) => Math.min(((ctx.studyStreak || 0) / 5) * 100, 100),
+    lore: "Five focus sprints completed. Your deep concentration has reached a state of peaceful clarity and absolute productivity.",
+    tabRedirect: 'focus' as const
+  },
+  {
+    id: 'perfect_presence',
+    title: 'Perfect Presence',
+    emoji: '✔️',
+    description: 'Achieve at least 5 days of verified class attendance.',
+    badgeClass: 'bg-cyan-50 border-cyan-200 text-cyan-600',
+    color: 'from-cyan-50 to-blue-50',
+    pointsAward: 150,
+    checkUnlock: (ctx: any) => ctx.presentCount >= 5,
+    progress: (ctx: any) => `Attended: ${Math.min(ctx.presentCount, 5)}/5 days`,
+    progressPercent: (ctx: any) => Math.min((ctx.presentCount / 5) * 100, 100),
+    lore: "Five days of perfect attendance logged! Your regular participation keeps the classroom dynamic and synchronized.",
+    tabRedirect: 'streaks' as const
   }
 ];
 

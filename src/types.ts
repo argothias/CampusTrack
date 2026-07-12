@@ -123,6 +123,7 @@ export interface SyncedTaskCompletion {
   completed: boolean;
   completedAt?: string;
   completedSubtaskIds?: string[];
+  status?: 'todo' | 'in_progress' | 'completed';
 }
 
 export interface AttendanceLog {
