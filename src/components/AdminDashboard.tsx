@@ -28,8 +28,8 @@ interface AdminDashboardProps {
   onClose: () => void;
   activeProfileId: string | null;
   userEmail?: string | null;
-  googleToken: string | null;
-  onGoogleSignIn: () => Promise<void>;
+  googleToken?: string | null;
+  onGoogleSignIn?: () => Promise<void>;
   consoleTitle?: string;
 }
 
@@ -76,8 +76,6 @@ export default function AdminDashboard({
   onClose,
   activeProfileId,
   userEmail: _userEmail,
-  googleToken,
-  onGoogleSignIn,
   consoleTitle
 }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'classrooms'>('overview');
@@ -686,8 +684,6 @@ export default function AdminDashboard({
             
             {/* Google Sheets Report Export */}
             <GoogleSheetsExport
-              googleToken={googleToken}
-              onGoogleSignIn={onGoogleSignIn}
               profiles={analyzedProfiles}
               attendanceLogs={analyzedAttendanceLogs}
               completions={analyzedCompletions}

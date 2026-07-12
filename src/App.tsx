@@ -13,7 +13,7 @@ import {
   Edit3, Paperclip, Link, FileText, UploadCloud, ChevronRight, HelpCircle, ArrowRight,
   MessageSquare, X, Menu, Image, Pin, Palette, Sun, Moon, Coffee, Settings,
   TrendingUp, Trophy, User, GraduationCap, Bell,
-  Sparkles, Star, Zap, CalendarClock, University, CheckSquare, BookOpen
+  Sparkles, Star, Zap, University, CheckSquare, BookOpen
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import PomodoroTimer from './components/PomodoroTimer';
@@ -624,17 +624,13 @@ export default function App() {
   const [googleToken, setGoogleToken] = useState<string | null>(null);
   const [_needsGoogleAuth, setNeedsGoogleAuth] = useState(true);
 
-  // Google Auth Bridge states
-  const [bridgeLoading, setBridgeLoading] = useState(false);
-  const [bridgeError, setBridgeError] = useState<string | null>(null);
-  const [bridgeSuccess, setBridgeSuccess] = useState(false);
-
   // Profile customization states
   const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
   const [_isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [editName, setEditName] = useState('');
   const [editTagline, setEditTagline] = useState('');
   const [editAvatar, setEditAvatar] = useState('');
+  const [editGender, setEditGender] = useState<'male' | 'female'>('male');
   const [editAutoDeleteCompleted, setEditAutoDeleteCompleted] = useState(false);
   const [editAutoDeleteInterval, setEditAutoDeleteInterval] = useState<string>('immediate');
   const [activeDetailTask, setActiveDetailTask] = useState<Task | null>(null);
@@ -679,6 +675,7 @@ export default function App() {
   const [newUserName, setNewUserName] = useState('');
   const [newUserTagline, setNewUserTagline] = useState('');
   const [newUserAvatar, setNewUserAvatar] = useState(BLANK_WHITE_PICTURE);
+  const [regGender, setRegGender] = useState<'male' | 'female'>('male');
 
   // Avatar Options (Deprecated)
   const _avatarOptions: string[] = [];
@@ -699,7 +696,7 @@ export default function App() {
   const [_selectedPriority, _setSelectedPriority] = useState('All');
   const [selectedScope, setSelectedScope] = useState<'all' | 'synced' | 'personal'>('all');
   const [sortBy, setSortBy] = useState<'dueDate' | 'priority' | 'category'>('dueDate');
-  const [viewMode, setViewMode] = useState<'list' | 'kanban' | 'calendar'>('kanban');
+  const [viewMode, setViewMode] = useState<'list' | 'kanban'>('kanban');
 
   // App Customization and Color Scheme States
   interface FullThemePreset {
@@ -975,7 +972,6 @@ export default function App() {
   // Task inline/modal edit, lightbox view, and calendar Date states
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [lightboxImage, setLightboxImage] = useState<{ url: string; title: string } | null>(null);
-  const [calendarDate, setCalendarDate] = useState(() => new Date());
 
   const [toasts, setToasts] = useState<Array<{
     id: string;
@@ -1596,9 +1592,6 @@ export default function App() {
           const myProfile = { id: docSnap.id, ...docSnap.data() } as StudentProfile;
           setProfiles([myProfile]);
           checkAndUpdateLoginStreak(myProfile);
-          if (myProfile.googleToken) {
-            setGoogleToken(myProfile.googleToken);
-          }
         }
         setLoading(false);
       }, err => {
@@ -2055,6 +2048,7 @@ export default function App() {
       setEditName(activeProfile.name);
       setEditTagline(activeProfile.tagline);
       setEditAvatar(activeProfile.avatar);
+      setEditGender(activeProfile.gender || 'male');
       setEditAutoDeleteCompleted(activeProfile.autoDeleteCompleted ?? false);
       setEditAutoDeleteInterval(activeProfile.autoDeleteInterval || 'immediate');
       setEditAppMode(activeProfile.appMode || 'Student');
@@ -2140,17 +2134,6 @@ export default function App() {
   const openGooglePicker = async () => {
     let tokenToUse = googleToken;
     if (!tokenToUse) {
-      const isWebView = typeof window !== 'undefined' && (
-        /wv/i.test(window.navigator.userAgent) || 
-        (window.navigator.userAgent.includes('Android') && !window.navigator.userAgent.includes('Chrome/')) || 
-        window.location.protocol === 'file:' ||
-        window.location.protocol === 'capacitor:' ||
-        window.location.protocol === 'chrome-extension:'
-      );
-      if (isWebView) {
-        alert("Google account connection is blocked inside this APK app by Google's strict security policies. Please use the Web version of this app in Chrome/Safari to connect and access Google Drive files.");
-        return;
-      }
       if (confirm("Accessing Google Drive files requires a connected Google account. Launch authentication popup?")) {
         try {
           const res = await googleSignIn();
@@ -2246,17 +2229,6 @@ export default function App() {
     if (source === 'drive') {
       let tokenToUse = googleToken;
       if (!tokenToUse) {
-        const isWebView = typeof window !== 'undefined' && (
-          /wv/i.test(window.navigator.userAgent) || 
-          (window.navigator.userAgent.includes('Android') && !window.navigator.userAgent.includes('Chrome/')) || 
-          window.location.protocol === 'file:' ||
-          window.location.protocol === 'capacitor:' ||
-          window.location.protocol === 'chrome-extension:'
-        );
-        if (isWebView) {
-          alert("Google account connection is blocked inside this APK app by Google's strict security policies. Please use the Web version of this app in Chrome/Safari to connect and attach Google Drive files.");
-          return;
-        }
         if (confirm("Attaching from Google Drive requires connecting your Google account. Connect now?")) {
           try {
             const res = await googleSignIn();
@@ -2370,17 +2342,6 @@ export default function App() {
   const handleGoogleSignIn = async () => {
     setFormError(null);
     setFormSuccess(null);
-    const isWebView = typeof window !== 'undefined' && (
-      /wv/i.test(window.navigator.userAgent) || 
-      (window.navigator.userAgent.includes('Android') && !window.navigator.userAgent.includes('Chrome/')) || 
-      window.location.protocol === 'file:' ||
-      window.location.protocol === 'capacitor:' ||
-      window.location.protocol === 'chrome-extension:'
-    );
-    if (isWebView) {
-      setFormError("Google sign-in is restricted inside APK app WebViews by Google's security guidelines. Please use your Student Username & Password to sign in, or open the Web app in your mobile browser to sign in with Google.");
-      return;
-    }
     try {
       const res = await googleSignIn();
       if (!res) return;
@@ -2493,6 +2454,7 @@ export default function App() {
         name: newUserName.trim(),
         avatar: newUserAvatar || BLANK_WHITE_PICTURE,
         tagline: newUserTagline.trim() || 'Classroom Buddy',
+        gender: regGender,
         securityQuestion: securityQuestion || "What is your favorite school subject?",
         securityAnswer: securityAnswer.trim().toLowerCase(),
         autoDeleteCompleted: false,
@@ -3643,110 +3605,6 @@ export default function App() {
 
   // Handle static terms and privacy routes within the single-page application
   const currentPath = window.location.pathname.toLowerCase().trim();
-
-  const urlParams = new URLSearchParams(window.location.search);
-  const isBridgeAuth = urlParams.get('bridgeAuth') === 'true';
-  const bridgeUid = urlParams.get('uid');
-
-  const handleBridgeAuthorize = async () => {
-    if (!bridgeUid) return;
-    setBridgeLoading(true);
-    setBridgeError(null);
-    try {
-      const res = await googleSignIn();
-      if (!res) {
-        throw new Error("No authorization result returned from Google.");
-      }
-      const { user, accessToken } = res;
-      await updateProfile(bridgeUid, {
-        googleToken: accessToken,
-        googleEmail: user.email || 'connected_workspace_user',
-        googleTokenUpdatedAt: new Date().toISOString()
-      });
-      setBridgeSuccess(true);
-    } catch (err: any) {
-      console.error("Bridge authorization error:", err);
-      setBridgeError(err.message || "Authorization failed. Please ensure you allow all permissions and try again.");
-    } finally {
-      setBridgeLoading(false);
-    }
-  };
-
-  if (isBridgeAuth && bridgeUid) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4">
-        <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 text-center space-y-6 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 animate-pulse" />
-          
-          <div className="mx-auto w-16 h-16 rounded-2xl bg-indigo-950/60 border border-indigo-500/30 flex items-center justify-center shadow-inner">
-            <span className="text-3xl">📊</span>
-          </div>
-          
-          <div className="space-y-2">
-            <h1 className="text-xl font-black text-white tracking-tight">Android App Google Auth Bridge</h1>
-            <p className="text-xs text-slate-400 leading-relaxed max-w-xs mx-auto">
-              Securely authorize Google Workspace on your Android APK app via this standard mobile browser tab.
-            </p>
-          </div>
-
-          <div className="bg-slate-950/60 border border-slate-850 p-4 rounded-2xl text-left space-y-3">
-            <div className="flex items-center gap-2 text-[10.5px] font-mono text-indigo-400 font-bold uppercase tracking-wide">
-              <span>Device Authentication Info</span>
-            </div>
-            <div className="space-y-1.5 text-[11px] text-slate-300">
-              <div className="flex justify-between">
-                <span className="text-slate-500 font-mono">App Client ID:</span>
-                <span className="font-mono text-slate-400 font-medium truncate max-w-[200px]">{bridgeUid}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500 font-mono">Channel:</span>
-                <span className="text-emerald-400 font-mono font-semibold">Secure Direct-to-Firestore</span>
-              </div>
-            </div>
-          </div>
-
-          {bridgeError ? (
-            <div className="p-3.5 bg-red-950/40 border border-red-900/40 rounded-xl text-xs text-red-300 flex items-center gap-2.5">
-              <div className="text-left leading-normal">{bridgeError}</div>
-            </div>
-          ) : bridgeSuccess ? (
-            <div className="p-3.5 bg-emerald-950/40 border border-emerald-900/30 rounded-xl space-y-2 text-center">
-              <div className="text-xs text-emerald-300 font-bold flex items-center justify-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                Connection Fully Verified!
-              </div>
-              <p className="text-[10px] text-slate-400 leading-relaxed">
-                Your credentials have been securely stored in your Firestore profile. You can now **close this browser tab** and return to your APK app. It has unlocked automatically!
-              </p>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={handleBridgeAuthorize}
-              disabled={bridgeLoading}
-              className={`w-full bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-3 px-4 rounded-2xl text-xs flex items-center justify-center gap-2.5 cursor-pointer transition-all active:scale-[0.98] shadow-lg shadow-indigo-950/40 ${bridgeLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
-            >
-              {bridgeLoading ? (
-                <>
-                  <div className="w-4 h-4 rounded-full border-2 border-white/20 border-t-white animate-spin animate-infinite" />
-                  <span>Contacting Google OAuth...</span>
-                </>
-              ) : (
-                <>
-                  <span>Authorize Workspace Account</span>
-                </>
-              )}
-            </button>
-          )}
-
-          <div className="text-[10px] text-slate-500 font-mono">
-            Powered by StudySync Cryptographic Token Bridge
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   if (currentPath === '/privacy') {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col justify-between p-4 sm:p-8 font-sans text-slate-300">
@@ -3884,7 +3742,7 @@ export default function App() {
   const sidebarBgVal = customSidebarColor || '#0f172a';
 
   return (
-    <div className="min-h-screen bg-slate-950 flex justify-center items-center p-0 select-none font-sans overflow-x-hidden overflow-y-auto sm:overflow-hidden">
+    <div className="min-h-screen theme-body-bg flex justify-center items-center p-0 select-none font-sans overflow-x-hidden overflow-y-auto sm:overflow-hidden">
       <style>{`
         :root {
           --primary-color: ${customColor};
@@ -4064,29 +3922,97 @@ export default function App() {
           .border-slate-300, .border-slate-350 {
             border-color: #DFD6C4 !important;
           }
-        ` : (customTextColor || customCardColor) ? `
-          /* === LIGHT THEME CUSTOM OVERRIDES === */
-          .text-slate-900, .text-slate-850, .text-slate-805, .text-slate-800, .text-slate-705, .text-slate-700 {
-            color: var(--text-main) !important;
+        ` : `
+          /* === LIGHT SLATE THEMING OVERRIDES === */
+          .text-slate-950, .text-slate-900, .text-slate-850, .text-slate-805 {
+            color: ${customTextColor || '#0f172a'} !important;
           }
-          .text-slate-500, .text-slate-600, .text-slate-450 {
-            color: var(--text-main) !important;
-            opacity: 0.72 !important;
+          .text-slate-800, .text-slate-705, .text-slate-700, .text-slate-650 {
+            color: ${customTextColor ? 'var(--text-main)' : '#1e293b'} !important;
           }
-          .text-slate-400 {
-            color: var(--text-main) !important;
-            opacity: 0.55 !important;
+          .text-slate-600, .text-slate-500 {
+            color: ${customTextColor ? 'var(--text-main)' : '#475569'} !important;
+            opacity: ${customTextColor ? 0.8 : 1} !important;
           }
+          .text-slate-450, .text-slate-400 {
+            color: ${customTextColor ? 'var(--text-main)' : '#5e6e82'} !important;
+            opacity: ${customTextColor ? 0.75 : 1} !important;
+          }
+          .text-slate-350, .text-slate-300, .text-slate-250, .text-slate-200 {
+            color: ${customTextColor ? 'var(--text-main)' : '#7f8ea3'} !important;
+            opacity: ${customTextColor ? 0.65 : 1} !important;
+          }
+
+          /* Protect text inside dark backgrounds (buttons, badges, active indicators) from inheriting light overrides */
+          .bg-slate-950 .text-slate-300, .bg-slate-900 .text-slate-300, .bg-slate-850 .text-slate-300, .bg-slate-800 .text-slate-300,
+          .bg-slate-950 .text-slate-200, .bg-slate-900 .text-slate-200, .bg-slate-850 .text-slate-200, .bg-slate-800 .text-slate-200,
+          .bg-slate-950 .text-slate-100, .bg-slate-900 .text-slate-100, .bg-slate-850 .text-slate-100, .bg-slate-800 .text-slate-100,
+          .bg-indigo-650 .text-slate-300, .bg-indigo-600 .text-slate-300, .bg-emerald-600 .text-slate-300, .bg-rose-600 .text-slate-300,
+          .bg-indigo-650 .text-slate-200, .bg-indigo-600 .text-slate-200, .bg-emerald-600 .text-slate-200, .bg-rose-600 .text-slate-200 {
+            color: #f1f5f9 !important;
+            opacity: 0.95 !important;
+          }
+          .bg-slate-950 .text-slate-400, .bg-slate-900 .text-slate-400, .bg-slate-850 .text-slate-400, .bg-slate-800 .text-slate-400,
+          .bg-slate-950 .text-slate-450, .bg-slate-900 .text-slate-450, .bg-slate-850 .text-slate-450, .bg-slate-800 .text-slate-450,
+          .bg-indigo-650 .text-slate-400, .bg-indigo-600 .text-slate-400, .bg-emerald-600 .text-slate-400, .bg-rose-600 .text-slate-400 {
+            color: #cbd5e1 !important;
+            opacity: 0.9 !important;
+          }
+          ::placeholder {
+            color: #94a3b8 !important;
+            opacity: 0.95 !important;
+          }
+
+          /* Background overrides for layered depth */
           .bg-white {
             background-color: var(--card-bg) !important;
           }
           .bg-slate-50 {
             background-color: var(--body-bg) !important;
           }
-          .border-slate-200, .border-slate-150, .border-slate-100 {
-            border-color: rgba(var(--primary-color-rgb), 0.15) !important;
+          .bg-slate-100 {
+            background-color: ${customBgColor ? 'var(--body-bg)' : '#f1f5f9'} !important;
           }
-        ` : ''}
+          .bg-slate-150, .bg-slate-200 {
+            background-color: ${customBgColor ? 'rgba(var(--primary-color-rgb), 0.05)' : '#e2e8f0'} !important;
+          }
+          .bg-slate-250, .bg-slate-300 {
+            background-color: ${customBgColor ? 'rgba(var(--primary-color-rgb), 0.1)' : '#cbd5e1'} !important;
+          }
+          .bg-slate-350 {
+            background-color: #cbd5e1 !important;
+          }
+          
+          /* Hover overrides */
+          .hover\\:bg-slate-50:hover {
+            background-color: #f8fafc !important;
+          }
+          .hover\\:bg-slate-100:hover {
+            background-color: #f1f5f9 !important;
+          }
+          .hover\\:bg-slate-150:hover, .hover\\:bg-slate-200:hover {
+            background-color: #cbd5e1 !important;
+          }
+          
+          /* Semi-transparent overlays */
+          .bg-slate-100\\/30, .bg-slate-50\\/50, .bg-slate-100\\/50, .bg-slate-50\\/55, .bg-slate-100\\/55 {
+            background-color: rgba(15, 23, 42, 0.03) !important;
+          }
+          
+          /* Light accent container background overrides */
+          .bg-indigo-50, .bg-emerald-50, .bg-rose-50, .bg-violet-50, .bg-amber-50, .bg-indigo-50\\/50, .bg-emerald-50\\/55, .bg-rose-50\\/55, .bg-violet-50\\/55, .bg-amber-50\\/55 {
+            background-color: rgba(var(--primary-color-rgb), 0.08) !important;
+            color: var(--primary-color) !important;
+          }
+          
+          /* Border overrides */
+          .border-slate-100, .border-slate-150, .border-slate-200, .border-slate-205, .border-slate-250 {
+            border-color: ${customBgColor ? 'rgba(var(--primary-color-rgb), 0.1)' : '#e2e8f0'} !important;
+          }
+          .border-slate-300, .border-slate-350 {
+            border-color: ${customBgColor ? 'rgba(var(--primary-color-rgb), 0.15)' : '#cbd5e1'} !important;
+          }
+        `}
 
         /* 🔔 Ensure sidebar elements remain beautifully readable with high contrast on dark sidebar background */
         .theme-sidebar-bg .text-slate-100, .theme-sidebar-bg .text-slate-200, .theme-sidebar-bg .text-slate-300 {
@@ -4733,10 +4659,14 @@ export default function App() {
               {/* PROFILE SELECTOR OR PROFILE TRIGGER */}
               {activeProfile ? (
                 <div 
-                  onClick={() => { setShowProfilePopover(!showProfilePopover); setShowGroupPopover(false); }}
+                  onClick={() => { 
+                    setActiveTab('profile'); 
+                    setShowProfilePopover(false); 
+                    setShowGroupPopover(false); 
+                  }}
                   className="w-8 h-8 rounded-full border-2 border-slate-200 hover:border-indigo-400 cursor-pointer relative shadow-3xs active:scale-95 transition-all overflow-hidden shrink-0"
                   id="switcher-identity-trigger"
-                  title="View Profile Quick Actions"
+                  title="View Profile Page"
                 >
                   <img 
                     src={activeProfile.avatar} 
@@ -4931,6 +4861,34 @@ export default function App() {
                           <option value="Administrative Office">Administrative Office</option>
                           <option value="School">School</option>
                         </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[9px] uppercase font-extrabold text-slate-400 tracking-wider block">Gender</label>
+                        <div className="flex gap-4 pt-1">
+                          <label className="flex items-center gap-1.5 text-xs text-slate-700 cursor-pointer select-none">
+                            <input
+                              type="radio"
+                              name="regGender"
+                              value="male"
+                              checked={regGender === 'male'}
+                              onChange={() => setRegGender('male')}
+                              className="accent-indigo-600 w-4 h-4 cursor-pointer"
+                            />
+                            Male
+                          </label>
+                          <label className="flex items-center gap-1.5 text-xs text-slate-700 cursor-pointer select-none">
+                            <input
+                              type="radio"
+                              name="regGender"
+                              value="female"
+                              checked={regGender === 'female'}
+                              onChange={() => setRegGender('female')}
+                              className="accent-indigo-600 w-4 h-4 cursor-pointer"
+                            />
+                            Female
+                          </label>
+                        </div>
                       </div>
 
                       <div className="border-t border-slate-100 pt-2 space-y-2">
@@ -5543,6 +5501,7 @@ export default function App() {
                             name: editName.trim(),
                             tagline: editTagline.trim(),
                             avatar: editAvatar,
+                            gender: editGender,
                             role: editUserRole,
                             appMode: editUserRole
                           });
@@ -5638,6 +5597,20 @@ export default function App() {
                               </button>
                             )}
                           </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block font-sans">Gender</label>
+                          <select
+                            value={editGender}
+                            onChange={(e) => setEditGender(e.target.value as 'male' | 'female')}
+                            className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-indigo-650 rounded-xl px-3.5 py-2.5 text-xs text-slate-850 outline-none transition-all shadow-3xs cursor-pointer"
+                          >
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                          </select>
                         </div>
                       </div>
 
@@ -5793,6 +5766,7 @@ export default function App() {
                     return (
                       <div className="w-full relative overflow-visible transition-all duration-300">
                         <div 
+                          id="overall-progress-bar-container"
                           onClick={() => {
                             if (metrics.percent === 100 && metrics.total > 0) {
                               setShowGlobalCongratulation(true);
@@ -5976,7 +5950,7 @@ export default function App() {
                   })()}
 
                   {/* COLLAPSIBLE ANNOUNCEMENTS FEED BANNER (MINIMIZED) */}
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-2 px-3.5 shadow-3xs">
+                  <div id="announcements-banner-container" className="bg-slate-50 border border-slate-200 rounded-xl p-2 px-3.5 shadow-3xs">
                     <button
                       type="button"
                       onClick={() => setShowAnnouncements(!showAnnouncements)}
@@ -6122,7 +6096,7 @@ export default function App() {
 
                   {/* CUSTOMIZABLE CATEGORIES PILLS SLIDER (MINIMIZED) */}
                   <div className="space-y-1 text-left font-sans">
-                    <span className="text-[9px] font-mono text-slate-400 font-extrabold uppercase tracking-widest pl-1 block">Subject Categories</span>
+                    <span id="subject-categories-header" className="text-[9px] font-mono text-slate-400 font-extrabold uppercase tracking-widest pl-1 block">Subject Categories</span>
                     {loadedCategories.length <= 1 ? (
                       <p className="text-[10px] text-slate-400 italic pl-1">No custom tags registered. Use "Create Task" tab to log subjects.</p>
                     ) : (
@@ -6148,7 +6122,7 @@ export default function App() {
                   </div>
 
                   {/* CLASSMATE SYNC SCOPE FILTER BOX */}
-                  <div className="flex gap-1 bg-slate-200/60 p-1 rounded-xl font-sans text-stone-700 text-left">
+                  <div id="classmate-sync-filter-box" className="flex gap-1 bg-slate-200/60 p-1 rounded-xl font-sans text-stone-700 text-left">
                     <button
                       onClick={() => setSelectedScope('all')}
                       className={`flex-1 py-1.5 rounded-lg text-[10.5px] font-bold transition-all cursor-pointer ${
@@ -6176,8 +6150,9 @@ export default function App() {
                   </div>
 
                   {/* VIEW MODE SETTINGS AND SORT SELECTOR */}
-                  <div className="flex items-center justify-between text-xs px-1 border-t border-slate-150 pt-3">
+                  <div id="sort-viewmode-settings-container" className="flex items-center justify-between text-xs px-1 border-t border-slate-150 pt-3">
                     <button 
+                      id="sort-sheet-trigger-btn"
                       onClick={() => setShowSortSheet(true)}
                       className="flex items-center gap-1.5 font-bold text-slate-705 hover:text-slate-900 bg-white border border-slate-200 px-3 py-1.5 rounded-xl transition-all cursor-pointer shadow-xs"
                     >
@@ -6199,13 +6174,6 @@ export default function App() {
                         title="Kanban columns view mode"
                       >
                         <Layout className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => setViewMode('calendar')}
-                        className={`p-1 rounded-md transition-all cursor-pointer ${viewMode === 'calendar' ? 'bg-white shadow-xs text-slate-800' : 'text-slate-400 hover:text-slate-605'}`}
-                        title="Calendar scheduler view mode"
-                      >
-                        <CalendarClock className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
@@ -6607,7 +6575,7 @@ export default function App() {
                         );
                       })}
                     </div>
-                  ) : viewMode === 'kanban' ? (
+                  ) : (
                     
                     /* DESIGN B: REAL KANBAN STATUS COLUMNS WITH DRAG/ACTION CARDS */
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left font-sans items-start">
@@ -6833,115 +6801,6 @@ export default function App() {
                           </div>
                         );
                       })}
-                    </div>
-                  ) : (
-                    /* DESIGN C: HIGH FIDELITY MONTHLY CALENDAR GRID VIEW */
-                    <div className="bg-white rounded-3xl border border-slate-200 p-4 sm:p-5 shadow-xs font-sans text-left space-y-4">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
-                        <div className="space-y-1">
-                          <h4 className="font-extrabold text-slate-800 text-sm">
-                            {calendarDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
-                          </h4>
-                          <p className="text-[10px] text-slate-450 leading-none">Click any date's study items to open the classroom workspace discussion folder.</p>
-                        </div>
-                        <div className="flex items-center gap-1.5 self-start">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const prev = new Date(calendarDate);
-                              prev.setMonth(prev.getMonth() - 1);
-                              setCalendarDate(prev);
-                            }}
-                            className="px-2.5 py-1 text-[10.5px] font-bold border border-slate-200 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors"
-                          >
-                            ← Prev
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setCalendarDate(new Date())}
-                            className="px-2.5 py-1 text-[10.5px] font-bold bg-slate-900 border border-slate-900 text-white rounded-lg cursor-pointer transition-colors"
-                          >
-                            Today
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const next = new Date(calendarDate);
-                              next.setMonth(next.getMonth() + 1);
-                              setCalendarDate(next);
-                            }}
-                            className="px-2.5 py-1 text-[10.5px] font-bold border border-slate-200 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors"
-                          >
-                            Next →
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Calendar Grid Header */}
-                      <div className="grid grid-cols-7 gap-1 text-center font-bold text-[10px] text-slate-400">
-                        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                          <div key={day} className="py-1">{day}</div>
-                        ))}
-                      </div>
-
-                      <div className="grid grid-cols-7 gap-1">
-                        {(() => {
-                          const year = calendarDate.getFullYear();
-                          const month = calendarDate.getMonth();
-                          const firstDayIndex = new Date(year, month, 1).getDay();
-                          const totalDays = new Date(year, month + 1, 0).getDate();
-                          
-                          const cells = [];
-                          for (let i = 0; i < firstDayIndex; i++) {
-                            cells.push(<div key={`empty-${i}`} className="aspect-square bg-slate-50/55 rounded-xl opacity-40 border border-slate-100/50" />);
-                          }
-
-                          const todayStr = new Date().toISOString().split('T')[0];
-                          for (let d = 1; d <= totalDays; d++) {
-                            const cellDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                            const isTodayCell = cellDateStr === todayStr;
-                            const dayTasks = activeGroupTasksFiltered.filter(t => t.dueDate === cellDateStr);
-
-                            cells.push(
-                              <div 
-                                key={`day-${d}`} 
-                                className={`p-1.5 rounded-xl border aspect-square flex flex-col justify-between text-left transition-all ${
-                                  isTodayCell 
-                                    ? 'bg-indigo-50 border-indigo-250 text-indigo-900 shadow-3xs ring-1 ring-indigo-300' 
-                                    : 'bg-white border-slate-150 hover:border-slate-300'
-                                }`}
-                              >
-                                <div className="flex justify-between items-center">
-                                  <span className={`text-[10.5px] font-black ${isTodayCell ? 'text-indigo-650' : 'text-slate-700'}`}>{d}</span>
-                                  {isTodayCell && <span className="text-[7px] px-1 bg-indigo-600 text-white rounded font-extrabold font-mono leading-tight scale-90 -mr-1">TODAY</span>}
-                                </div>
-                                <div className="space-y-1 mt-1 overflow-y-auto max-h-[45px] select-none scrollbar-none flex-1">
-                                  {dayTasks.map(t => (
-                                    <div 
-                                      key={t.id}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setActiveDetailTask(t);
-                                      }}
-                                      className={`text-[8.5px]/none px-1.5 py-0.5 rounded truncate font-black cursor-pointer shadow-3xs border transition-colors ${
-                                        t.completed 
-                                          ? 'bg-slate-100 text-slate-400 line-through border-slate-200' 
-                                          : t.priority === 'high' 
-                                            ? 'bg-rose-50 text-rose-700 border-rose-150 border-l-[3px] border-l-rose-500 hover:bg-rose-100/50' 
-                                            : 'bg-emerald-50 text-emerald-700 border-emerald-150 hover:bg-emerald-100/50'
-                                      }`}
-                                      title={t.title}
-                                    >
-                                      {t.title}
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            );
-                          }
-                          return cells;
-                        })()}
-                      </div>
                     </div>
                   )}
                 </motion.div>
@@ -8622,6 +8481,10 @@ export default function App() {
                                   type="button"
                                   onClick={() => {
                                     setAppThemeMode(m.id as any);
+                                    setCustomBgColor('');
+                                    setCustomCardColor('');
+                                    setCustomTextColor('');
+                                    setCustomSidebarColor('');
                                   }}
                                   className={`p-3 rounded-2xl border text-center transition-all cursor-pointer flex flex-col justify-between h-20 ${m.bg} ${
                                     isActive 
@@ -9156,6 +9019,23 @@ export default function App() {
                               onClick={() => {
                                 setAppThemeMode(modeOpt.key as any);
                                 localStorage.setItem('studysync_theme_mode', modeOpt.key);
+                                localStorage.setItem('studysync_committed_theme_mode', modeOpt.key);
+                                
+                                // Clear custom overrides to let the selected mode's defaults render
+                                setCustomBgColor('');
+                                setCustomCardColor('');
+                                setCustomTextColor('');
+                                setCustomSidebarColor('');
+                                
+                                localStorage.setItem('studysync_custom_bg_color', '');
+                                localStorage.setItem('studysync_custom_card_color', '');
+                                localStorage.setItem('studysync_custom_text_color', '');
+                                localStorage.setItem('studysync_custom_sidebar_color', '');
+                                
+                                localStorage.setItem('studysync_committed_bg_color', '');
+                                localStorage.setItem('studysync_committed_card_color', '');
+                                localStorage.setItem('studysync_committed_text_color', '');
+                                localStorage.setItem('studysync_committed_sidebar_color', '');
                               }}
                               className={`py-2 px-2.5 rounded-xl border text-[10px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                                 appThemeMode === modeOpt.key

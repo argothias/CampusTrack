@@ -375,7 +375,17 @@ export default function StarterTutorial({
                 </div>
                 <div>
                   <h4 className="font-extrabold text-slate-900 text-xs sm:text-sm">XP & Identity Profile</h4>
-                  <p className="text-[11px] text-slate-500 leading-normal">Inspect your persona card, claim rare achievements, view streak days, and customize your app's paint accents.</p>
+                  <p className="text-[11px] text-slate-500 leading-normal">Inspect your persona card, claim rare achievements, view streak days, and customize your app's paint accents. You can also update your gender (Male/Female) here anytime.</p>
+                </div>
+              </div>
+
+              <div className="flex gap-3.5 items-start">
+                <div className="bg-emerald-50 text-emerald-600 p-2 rounded-xl shrink-0">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-slate-900 text-xs sm:text-sm">Gender-Separated Excel Reports</h4>
+                  <p className="text-[11px] text-slate-500 leading-normal">When exporting attendance or coursework logs, students are automatically separated by gender (Male & Female) for clean, publication-ready institutional formatting.</p>
                 </div>
               </div>
             </div>

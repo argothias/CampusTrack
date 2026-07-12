@@ -9,13 +9,17 @@ import {
 import { auth } from '../firebase';
 
 const provider = new GoogleAuthProvider();
-// Request Workspace scopes for Picker and Sheets
+// Request Workspace scopes for Picker
 provider.addScope('https://www.googleapis.com/auth/drive.file');
 provider.addScope('https://www.googleapis.com/auth/drive.metadata.readonly');
-provider.addScope('https://www.googleapis.com/auth/spreadsheets');
 
 let _isSigningIn = false;
 let cachedAccessToken: string | null = null;
+
+// Helper to silently request Google OAuth token using Google Identity Services (GSI) - Disabled since GSI is removed
+export const requestSilentToken = (_email: string): Promise<string | null> => {
+  return Promise.resolve(null);
+};
 
 export const initAuth = (
   onAuthSuccess?: (user: User, token: string | null) => void,
@@ -23,6 +27,7 @@ export const initAuth = (
 ) => {
   return onAuthStateChanged(auth, async (user: User | null) => {
     if (user) {
+      // Call success callback immediately
       if (onAuthSuccess) {
         onAuthSuccess(user, cachedAccessToken);
       }
