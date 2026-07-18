@@ -1,93 +1,151 @@
 # CampusTrack 🎓✨
 
-CampusTrack is a highly polished, secure, and collaborative academic planner designed for students and study groups. It blends private personal task management with cloud-synchronized group tasks, real-time announcements, deep focus tracking, and a peer study point leaderboard.
+CampusTrack is a highly collaborative, deeply customizable academic planner and classroom dashboard built for students, study groups, and schools. It blends personal task organization with shared group assignments, automatic multiple-choice quiz grading, written lesson submissions, real-time classroom announcements, focus timers, and gamified academic point leaderboards.
 
-CampusTrack features a robust, **real-time, offline-first sync engine** using Firebase Firestore persistence, allowing you to view and edit your data even when disconnected from the internet.
-
----
-
-## 🚀 Key Features & Capabilities
-
-### 1. Adaptive View Modes (List & Kanban)
-* **High-Fidelity List View**: Sort, group, and filter assignments with ease. Enjoy a compact, structured layout featuring customizable priorities, scopes, and subject categories.
-* **Interactive Kanban Board View**: Track tasks from *To Do* through *In Progress* to *Completed* using real-time drag/action boards designed with clean responsive columns.
-
-### 2. Premium Theme Engine & High-Contrast Readability
-* **Perfect White/Light & Dark Modes**: Enjoy a beautiful, high-contrast, eye-safe light interface and sleek dark backgrounds. Text contrast and legibility are protected across all color configurations.
-* **Custom Color Scheme Presets**: Personalize the app's visual identity using predefined presets (Indigo, Emerald, Rose, Violet, Amber, Slate) or specify your own custom colors for background, sidebar, cards, and text with robust persistent overrides.
-
-### 3. Responsive, Dynamically Scaling UI
-* **Widescreen & Mobile Harmony**: Built to look amazing on everything from compact smartphones to ultra-wide desktop monitors.
-* **Fluid Layout Anchors**: Structural components like the real-time **Classroom Announcements Banner** and **Classmate Sync Filter Box** dynamically scale and self-adjust to make the best use of larger screen resolutions.
-
-### 4. Real-Time Study Groups & Collaboration
-* **Interactive Groups**: Create or join multiple study cohorts using secure access invite keys.
-* **Coordinator & Classmate Roles**: Coordinators can publish group tasks, attach materials, broadcast announcements, and review student task submissions.
-* **Task Submissions**: Submit completed work with attachments or notes directly within the app for coordinator verification.
-* **Shared Task Milestones**: Break tasks into subtask checkpoints. Custom checklists and synced completions are tracked individually per student so you can check off items at your own pace.
-
-### 5. Deep Focus Pomodoro Timer
-* **Customizable Study Blocks**: Train your focus with a fully functional Pomodoro timer equipped with customized interval configurations (Study Sprints, Short Breaks, Long Breaks).
-* **Focus Streaks**: Track your daily study milestones with motivational streak metrics.
-* **State Preservation**: The focus timer interface remains active and consistent across navigation tabs so your progress is never interrupted.
-
-### 6. Automated Completed Task Cleanup
-* **Smart Background Purges**: Control storage clutter by enabling the **Auto-Delete Completed Tasks** utility.
-* **Custom Retention Intervals**: Configure deletion parameters to purge completed assignments immediately or after set retention intervals (e.g., 1, 3, 5, or 7 days).
-
-### 7. Leaderboards & Study Points Metrics
-* **Gamified Motivation**: Students earn visual experience points (⭐ pts) automatically upon completing shared group assignments.
-* **Study Cohort Leaderboard**: Compare academic progress with group members in real-time, encouraging friendly study motivation.
+Whether studying on a high-speed campus network or studying offline in a quiet café, CampusTrack keeps assignments, attendance, progress, and study streaks synchronized, stylish, and stress-free.
 
 ---
 
-## 🛠️ Built With
+## 🚀 Complete Feature Guide (Explained in Layman's Terms)
 
-* **Frontend Framework**: [React 18](https://react.dev/) + [Vite](https://vite.dev/) (Client-Side SPA Architecture)
-* **Programming Language**: [TypeScript](https://www.typescriptlang.org/) (Strict type-safe interfaces)
-* **Styling**: [Tailwind CSS](https://tailwindcss.com/) (Responsive layouts, smooth responsive cards, and visual grid adjustments)
-* **Database & Auth**: [Firebase (Firestore & Authentication)](https://firebase.google.com/) (Real-time sync, native IndexedDB persistence caching)
-* **Animations**: [Motion](https://motion.dev/) (`motion/react` for micro-animations and staggered transitions)
-* **Icons**: [Lucide React](https://lucide.dev/)
+Below is a detailed breakdown of every single feature included in CampusTrack, describing exactly what it does, why it's useful, and how it operates under the hood.
 
 ---
 
-## 📦 Local Installation & Setup
-
-1. **Clone the Repository**:
-   ```bash
-   git clone <your-repository-url>
-   cd <your-repository-folder>
-   ```
-
-2. **Install Dependencies**:
-   ```bash
-   npm install
-   ```
-
-3. **Configure Environment Variables**:
-   Create a `.env` file in the root directory and add your Firebase credentials:
-   ```env
-   # .env
-   # Setup your standard Firestore environment variables here
-   ```
-
-4. **Run Dev Server**:
-   ```bash
-   npm run dev
-   ```
-   Open `http://localhost:3000` in your browser.
-
-5. **Build for Production**:
-   ```bash
-   npm run build
-   ```
+### 1. Dual View Modes: List & Kanban Boards
+* **What it does**: Lets you toggle instantly between two distinct visual styles for managing your daily assignments and course milestones.
+* **How it works**:
+  * **Interactive List View**: A clean, spreadsheet-inspired structured list. It is designed for deep sorting, grouping, and filtering. You can filter assignments by category, priority, and scope, and easily find tasks due today or this week.
+  * **Action-Driven Kanban Board**: A vertical column-based layout ("To Do", "In Progress", "Completed") where you can visually track your coursework. Clicking status buttons instantly moves tasks across columns to reflect your progress at a glance.
 
 ---
 
-## 🔒 Security & Rules
+### 2. Live Study Groups & Custom Classroom Roles
+* **What it does**: Connects multiple students and educators in a shared workspace with tailored permissions for assignments, resources, and administrative tracking.
+* **How it works**:
+  * **Access Invite Keys**: Create or join multiple study rooms using secure invite keys generated by the app.
+  * **Coordinators (Teachers, Leads, or Admins)**: Have power to publish group-synced assignments, attach files or reference links, pin high-priority announcements, and review student work.
+  * **Classmates (Students)**: Participate in shared study rooms, progress through checklists, ask questions in task chats, submit course materials, and track their position on the leaderboard.
 
-CampusTrack is backed by comprehensive **Firestore Security Rules** ensuring strict access controls:
-* Users can only read and write their own student profile information.
-* Study group tasks, submissions, comments, and milestones are restricted exclusively to authorized members of those respective groups.
-* Direct deletion rights are limited to creators of individual tasks and group Coordinators.
+---
+
+### 3. Objective Quizzes vs. Subjective Lesson Submissions
+* **What it does**: Allows educators to configure task assignments with real-time digital evaluations or open-ended written portfolio reviews.
+* **How it works**:
+  * **Objective Quizzes**: Coordinators can create multiple-choice questions (with custom options A, B, C, D) directly inside an assignment. When a student takes the quiz and hits submit, the system instantly compares answers against the coordinator's key and calculates an automatic percentage score.
+  * **Subjective Written Lessons**: Coordinators can prompt students to write custom text essays, paste reference links, or upload local file attachments. Students submit their essays directly through the assignment folder, where coordinators can read the response, type private feedback, and manually award points or grades.
+
+---
+
+### 4. Interactive Group Discussions & Class Announcements
+* **What it does**: Eliminates messy external group chats by attaching discussion threads directly to tasks and publishing central news bulletins.
+* **How it works**:
+  * **Task-Linked Comments**: Every single task (private or group-synced) has its own discussion section. Classmates and coordinators can ask questions, post updates, or attach images directly within the assignment thread to keep conversations contextually organized.
+  * **Classroom Announcements Banner**: Positioned prominently at the top of the workspace. Group leaders can broadcast urgent news (like rescheduled lectures or syllabus updates) and pin them to guarantee high visibility across all student screens.
+
+---
+
+### 5. Multi-Period Class Analytics Console (Recharts Engine)
+* **What it does**: Provides group coordinators and administrators with high-fidelity, real-time visualization dashboards to track student attendance, lesson completion rates, and study engagement.
+* **How it works**:
+  * **Custom Room & Period Comparisons**: Administrators can select multiple groups or specify side-by-side monthly comparisons (e.g., comparing May vs. June engagement metrics).
+  * **Rich Recharts Visualizations**: Powered by highly interactive line graphs, bar charts, pie charts, and composed area charts. It displays real-time statistics including task completions, average class scores, active comment volumes, and student attendance ratios.
+  * **Administrative Administration**: Toggle student roles between Classmate and Leader/Coordinator directly from the members table to delegate group moderator powers.
+
+---
+
+### 6. Interactive Onboarding & User Tutorial Walkthrough
+* **What it does**: Welcomes new users and guides them step-by-step through the core features, making sure they understand how to use their new study planner immediately.
+* **How it works**:
+  * Powered by `StarterTutorial.tsx`, the application fires an interactive guided tour upon initial registration. 
+  * It highlights key areas like the Classroom tabs, the custom theme designer, focus widgets, and task creation controls, providing tooltips and onboarding checklists that save progress to local storage.
+
+---
+
+### 7. Google Sheets & Excel Report Export Engine
+* **What it does**: Generates beautifully organized, download-ready spreadsheet files to back up or grade classrooms, study groups, and individual performance.
+* **How it works**:
+  * Powered by the SheetJS (`xlsx`) library, administrators can open the **Google Sheets Report Export** panel.
+  * Choose between exporting comprehensive **Attendance Logs** or **Coursework Completions** (which include student names, completion percentages, submitted quiz scores, and written answers).
+  * Filter reports by time windows (Today, Last 7 Days, Last 30 Days, All-Time). The engine generates a clean, multi-header spreadsheet with dates aligned horizontally for seamless import into Excel, Google Sheets, or grading databases.
+
+---
+
+### 8. Gamified Study Points (XP) & live leaderboards
+* **What it does**: Turns homework and test preparation into a rewarding, gamified experience to motivate students to hit their targets.
+* **How it works**:
+  * **Automatic XP Awarding**: Checking off shared group tasks instantly credits students with experience points (**⭐ Study Points**).
+  * **Manual Leader Awards**: Coordinators can open the Class Analytics Console to manually award custom point bonuses (e.g., +50 points) directly to individual profiles for active participation or exceptional written work.
+  * **Cohort Leaderboards**: Compare academic XP totals against fellow group members in real-time, encouraging friendly competition and study motivation.
+
+---
+
+### 9. Achievements Engine, Badges & Interactive Streaks
+* **What it does**: Tracks daily study habits, assignment submittals, and class attendance, awarding unlockable trophies and badges for consistent effort.
+* **How it works**:
+  * **Streak Tracking**: Tracks three independent streak metrics—**Daily Logins**, **Consistent Study Sprints**, and **Assignment Submissions**—to help students build lasting academic routines.
+  * **Dynamic Badge Engine**: Automatically evaluates performance against unlocked badges (such as *Consistent Studier*, *Task Master*, *Theme Designer*, *Perfect Attendance*, or *Night Owl*).
+  * Unlocking badges rewards users with additional point claims and allows them to "equip" their favorite badge directly onto their student avatar profile for others to see on the leaderboard.
+
+---
+
+### 10. Weekly Productivity Analytics & Personal Habit Charting
+* **What it does**: Offers students a personalized, high-fidelity visual breakdown of their individual accomplishments, study blocks, and task trends.
+* **How it works**:
+  * Renders interactive charts showing the volume of private and group tasks completed, categorized subjects, and points accumulated.
+  * Includes adjustable scope filters (My Tasks vs. All Classroom Assignments) and timeframes (7, 14, or 30 days) so you can review your performance, adjust your goals, and master your time.
+
+---
+
+### 11. Custom Color Scheme Designer & Contrast Safety Engine
+* **What it does**: Lets students express themselves by customizing the look and feel of the app, protecting text legibility and contrast under any color scheme.
+* **How it works**:
+  * Select from beautiful pre-configured palettes (Indigo, Emerald, Rose, Violet, Amber, Slate) or use the color picker to set **custom backgrounds, cards, sidebars, and text**.
+  * **Contrast Protection Engine**: Features a color luminance math engine that calculates the readability of your color scheme. If you choose dark backgrounds, the app shifts text to safe light grays and off-whites; if you select light backgrounds, the app hardens text elements to rich, deep charcoal grays to prevent eye strain.
+
+---
+
+### 12. Persistent Floating Pomodoro Focus Timer
+* **What it does**: Helps you beat distraction by dividing study blocks into highly focused sprints and short, relaxing breaks.
+* **How it works**:
+  * Set customized timer blocks (e.g., a 25-minute study sprint followed by a 5-minute coffee break).
+  * The timer operates as a persistent floating panel that **remains active across tabs**. This allows you to explore course materials, edit tasks, or converse in chats without interrupting, pausing, or losing your ticking session.
+
+---
+
+### 13. Smart Background Syncing & Swipe-to-Sync Offline Engine
+* **What it does**: Keeps the application running seamlessly, allowing you to write comments, complete quizzes, and edit tasks offline, then synchronizes changes once you're back online.
+* **How it works**:
+  * **Visual Alerts**: If internet connection is lost, a helpful offline banner notifies you that you've transitioned to local database storage.
+  * **Action Queuing**: All modifications, comments, and answers are saved to a secure client-side storage cache.
+  * **Auto-Syncing**: The moment connection is re-established, the sync engine dispatches your queued changes back to the cloud database (**Firebase Firestore**). Mobile and tablet users can also drag down on the screen (**Swipe-to-Sync**) to manually trigger a data refresh and check queue status.
+
+---
+
+### 14. Auto-Delete Clean-Up Utility
+* **What it does**: Prevents clutter from gathering in your calendar and planners by automatically clearing out old, completed items.
+* **How it works**:
+  * Go to user settings to toggle on **Auto-Delete Completed Tasks** and set a custom retention window (delete immediately, or after 1, 3, 5, or 7 days).
+  * The clean-up utility automatically clears completed tasks from your planner once the window expires, keeping your workspace clean and organized.
+
+---
+
+## 🛠️ Tech Stack & Dependencies
+
+* **Frontend**: [React 18](https://react.dev/) + [Vite](https://vite.dev/)
+* **Language**: [TypeScript](https://www.typescriptlang.org/) (Type-safe schemas and interfaces)
+* **Styling**: [Tailwind CSS](https://tailwindcss.com/) (Responsive, highly utility-based layout)
+* **Database & Auth**: [Firebase (Firestore & Authentication)](https://firebase.google.com/)
+* **Charts**: [Recharts](https://recharts.org/) (Interactive data graphs and dashboard reports)
+* **Spreadsheets**: [SheetJS (xlsx)](https://sheetjs.com/) (Horizontal array-of-arrays export engine)
+* **Animations**: [Motion](https://motion.dev/) (Staggered list entry and clean layout transitions)
+* **Icons**: [Lucide React](https://lucide.dev/) (Crisp, modern vector icon set)
+
+---
+
+## 🔒 Security & Privacy Architecture
+
+CampusTrack enforces strict security rules to protect your personal and school data:
+* **Profile Isolation**: Personal configurations (themes, streaks, auto-deletion settings) are fully private. Only you can read or edit your profile.
+* **Group Sandbox Security**: Group assignments, quiz submissions, attendance lists, and study comments are sandboxed—they are only visible to authorized members of that specific group invite code.
+* **Role Enforcement**: Only authors can modify or archive private tasks, and only authorized coordinators can publish group tasks, pin announcements, grade written work, or manage attendance.
