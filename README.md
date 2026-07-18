@@ -8,35 +8,34 @@ CampusTrack features a robust, **real-time, offline-first sync engine** using Fi
 
 ## 🚀 Key Features & Capabilities
 
-### 1. Unified Task & Assignment Engine
-* **Private vs. Shared Sync Tasks**: Manage personal private tasks alongside shared group assignments assigned by group Coordinators. Task completions and individual subtask milestone checkboxes for synced tasks are tracked individually per student, meaning only you see your completions, while the coordinator can see exactly who completed each item.
-* **Smart Categorization & Visual Tags**: Organize your workload with high-contrast customizable category labels, priority badges, and subject markers.
-* **Subtasks & Milestone Checklists**: Break large assignments down into manageable checkpoints with nested progress tracking.
-* **Rich Interactions**: Post task comments, upload links/attachments, track due dates, and mark progress.
+### 1. Adaptive View Modes (List & Kanban)
+* **High-Fidelity List View**: Sort, group, and filter assignments with ease. Enjoy a compact, structured layout featuring customizable priorities, scopes, and subject categories.
+* **Interactive Kanban Board View**: Track tasks from *To Do* through *In Progress* to *Completed* using real-time drag/action boards designed with clean responsive columns.
 
-### 2. Real-Time Study Groups & Collaboration
-* **Interactive Groups**: Create or join multiple study cohorts using invite codes.
+### 2. Premium Theme Engine & High-Contrast Readability
+* **Perfect White/Light & Dark Modes**: Enjoy a beautiful, high-contrast, eye-safe light interface and sleek dark backgrounds. Text contrast and legibility are protected across all color configurations.
+* **Custom Color Scheme Presets**: Personalize the app's visual identity using predefined presets (Indigo, Emerald, Rose, Violet, Amber, Slate) or specify your own custom colors for background, sidebar, cards, and text with robust persistent overrides.
+
+### 3. Responsive, Dynamically Scaling UI
+* **Widescreen & Mobile Harmony**: Built to look amazing on everything from compact smartphones to ultra-wide desktop monitors.
+* **Fluid Layout Anchors**: Structural components like the real-time **Classroom Announcements Banner** and **Classmate Sync Filter Box** dynamically scale and self-adjust to make the best use of larger screen resolutions.
+
+### 4. Real-Time Study Groups & Collaboration
+* **Interactive Groups**: Create or join multiple study cohorts using secure access invite keys.
 * **Coordinator & Classmate Roles**: Coordinators can publish group tasks, attach materials, broadcast announcements, and review student task submissions.
-* **Classroom Announcements**: Broadcast real-time notifications with important pinning capabilities for top-priority news.
-* **Task Submissions**: Submit completed work directly within the app for coordinator review.
+* **Task Submissions**: Submit completed work with attachments or notes directly within the app for coordinator verification.
+* **Shared Task Milestones**: Break tasks into subtask checkpoints. Custom checklists and synced completions are tracked individually per student so you can check off items at your own pace.
 
-### 3. Real-Time Offline-First Synchronization
-* **Automatic Offline Mode**: Seamlessly transition to offline cached mode when network connections are severed.
-* **Local Persistence**: Powered by client-side IndexedDB, allowing reading, writing, and completion of tasks offline.
-* **Visual Connection Banners**: Dynamic UI warnings inform the user that their device is offline and cached content is being displayed.
-* **Smart Background Syncing**: Offline actions are automatically queued and immediately dispatched to Firebase once the connection is restored.
-* **Swipe-to-Sync (Pull down to refresh)**: Experience smooth touch interactions. Drag down on mobile/tablet screens to manually trigger network reconnections, refresh retrieved data, and verify synchronized queues.
-
-### 4. Deep Focus Pomodoro Timer
+### 5. Deep Focus Pomodoro Timer
 * **Customizable Study Blocks**: Train your focus with a fully functional Pomodoro timer equipped with customized interval configurations (Study Sprints, Short Breaks, Long Breaks).
-* **Focus Streaks**: Track your daily focus milestones with motivational streak metrics.
-* **State Preservation**: The focus interface remains consistent across navigation tabs so your progress is never lost.
+* **Focus Streaks**: Track your daily study milestones with motivational streak metrics.
+* **State Preservation**: The focus timer interface remains active and consistent across navigation tabs so your progress is never interrupted.
 
-### 5. Automated Completed Task Cleanup
+### 6. Automated Completed Task Cleanup
 * **Smart Background Purges**: Control storage clutter by enabling the **Auto-Delete Completed Tasks** utility.
 * **Custom Retention Intervals**: Configure deletion parameters to purge completed assignments immediately or after set retention intervals (e.g., 1, 3, 5, or 7 days).
 
-### 6. Leaderboards & Study Points Metrics
+### 7. Leaderboards & Study Points Metrics
 * **Gamified Motivation**: Students earn visual experience points (⭐ pts) automatically upon completing shared group assignments.
 * **Study Cohort Leaderboard**: Compare academic progress with group members in real-time, encouraging friendly study motivation.
 
